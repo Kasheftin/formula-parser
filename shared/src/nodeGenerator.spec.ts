@@ -2,6 +2,7 @@ import { TokenType, TokenNode } from './types'
 import { NodeGenerator } from './nodeGenerator'
 import { Lexer } from './lexer'
 import { Tokenizer } from './tokenizer'
+import { FixFirstMinus } from './operatorPrecedence'
 
 const tests: [string, TokenNode[]][] = []
 
@@ -174,7 +175,6 @@ tests.push(['({field} - round(5.5)) * 2 + -1', [{
 }]])
 
 tests.push(['', []])
-
 tests.push(['f1((f2(4,2) - f3(f4({r1})-f5())), 2, "", "asd({qw\\"e})")', [{
   type: TokenType.FunctionName,
   value: 'f1',
@@ -233,9 +233,61 @@ tests.push(['f1((f2(4,2) - f3(f4({r1})-f5())), 2, "", "asd({qw\\"e})")', [{
   }]
 }]])
 
+tests.push(['if({n:1}<5,1,2)', [{
+  type: TokenType.FunctionName,
+  value: 'if',
+  innerNodes: [{
+    type: TokenType.Operator,
+    value: '<',
+    innerNodes: [{
+      type: TokenType.ReferenceName,
+      value: 'n:1',
+      innerNodes: []
+    }, {
+      type: TokenType.Number,
+      value: '5',
+      innerNodes: []
+    }]
+  }, {
+    type: TokenType.Number,
+    value: '1',
+    innerNodes: []
+  }, {
+    type: TokenType.Number,
+    value: '2',
+    innerNodes: []
+  }]
+}]])
+
+tests.push(['if (1<2,3,4)', [{
+  type: TokenType.FunctionName,
+  value: 'if',
+  innerNodes: [{
+    type: TokenType.Operator,
+    value: '<',
+    innerNodes: [{
+      type: TokenType.Number,
+      value: '1',
+      innerNodes: []
+    }, {
+      type: TokenType.Number,
+      value: '2',
+      innerNodes: []
+    }]
+  }, {
+    type: TokenType.Number,
+    value: '3',
+    innerNodes: []
+  }, {
+    type: TokenType.Number,
+    value: '4',
+    innerNodes: []
+  }]
+}]])
+
 describe('NodeGenerator(Lexer(formula, Tokenizer))', () => {
   test.each(tests)('should split %s to tokens correctly and generate binary tree', (formula, tokenNodes) => {
-    const result = NodeGenerator(Lexer(formula, Tokenizer))
+    const result = NodeGenerator(FixFirstMinus(Lexer(formula, Tokenizer)))
     expect(result).toEqual(tokenNodes)
   })
 })

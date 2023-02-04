@@ -46,8 +46,9 @@ export function Tokenizer ({ match, skip, prev }: LexerStream): TokenType {
   }
 
   const rest: [RegExp, TokenType][] = [
-    [/^[+\-*/^]/, TokenType.Operator],
-    [/^[a-zA-Z][a-zA-Z0-9]*(?=\()/, TokenType.FunctionName],
+    [/^(<=|==|>=)/, TokenType.Operator],
+    [/^[+\-*/^<=>]/, TokenType.Operator],
+    [/^[a-zA-Z][a-zA-Z0-9]*(?=\s*\()/, TokenType.FunctionName],
     [/^\(/, TokenType.BracketStart],
     [/^\)/, TokenType.BracketEnd],
     [/^{/, TokenType.ReferenceBracketStart],

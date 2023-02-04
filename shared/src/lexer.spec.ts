@@ -116,6 +116,35 @@ tests.push(['print("Hello, \\"w\\"orld")', [
   { type: TokenType.BracketEnd, value: ')' }
 ]])
 
+tests.push(['if({n:1}<5,1,2)', [
+  { type: TokenType.FunctionName, value: 'if' },
+  { type: TokenType.BracketStart, value: '(' },
+  { type: TokenType.ReferenceBracketStart, value: '{' },
+  { type: TokenType.ReferenceName, value: 'n:1' },
+  { type: TokenType.ReferenceBracketEnd, value: '}' },
+  { type: TokenType.Operator, value: '<' },
+  { type: TokenType.Number, value: '5' },
+  { type: TokenType.Comma, value: ',' },
+  { type: TokenType.Number, value: '1' },
+  { type: TokenType.Comma, value: ',' },
+  { type: TokenType.Number, value: '2' },
+  { type: TokenType.BracketEnd, value: ')' }
+]])
+
+tests.push(['if (1<2,3,4)', [
+  { type: TokenType.FunctionName, value: 'if' },
+  { type: TokenType.Whitespace, value: ' ' },
+  { type: TokenType.BracketStart, value: '(' },
+  { type: TokenType.Number, value: '1' },
+  { type: TokenType.Operator, value: '<' },
+  { type: TokenType.Number, value: '2' },
+  { type: TokenType.Comma, value: ',' },
+  { type: TokenType.Number, value: '3' },
+  { type: TokenType.Comma, value: ',' },
+  { type: TokenType.Number, value: '4' },
+  { type: TokenType.BracketEnd, value: ')' }
+]])
+
 describe('Lexer(formula, Tokenizer)', () => {
   test.each(tests)('should split %s to tokens correctly and join tokens back to initial formula', (formula, tokens) => {
     const result = Lexer(formula, Tokenizer)

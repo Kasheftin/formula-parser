@@ -5,12 +5,6 @@ const meaningfulTypes = [TokenType.String, TokenType.Number, TokenType.Reference
 export function NodeGenerator (tokens: Token[], level = 0) {
   const nodes: TokenNode[] = []
   const filteredTokens = level ? tokens : tokens.filter(token => meaningfulTypes.includes(token.type))
-  if (filteredTokens[0]?.type === TokenType.Operator) {
-    filteredTokens.unshift({
-      type: TokenType.Number,
-      value: '0'
-    })
-  }
   for (let i = 0; i < filteredTokens.length; i++) {
     const token = filteredTokens[i]
     if ([TokenType.String, TokenType.Number, TokenType.ReferenceName].includes(token.type)) {

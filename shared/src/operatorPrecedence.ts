@@ -27,15 +27,25 @@ export function OperatorPrecedence (tokens: Token[]) {
 }
 
 // Fix the formula like "-sin(1)" - add 0 at the begining
-export function FixFirstMinus (tokens: Token[]) {
-  tokens = [...tokens]
-  if (tokens[0]?.type === TokenType.Operator) {
-    tokens.unshift({
-      type: TokenType.Number,
-      value: '0'
-    })
+export function FixNegative (tokens: Token[]) {
+  const newTokens: Token[] = []
+  let prevToken: Token | null = null
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]
+    if (token.type === TokenType.Operator && token.value === '-') {
+      if (!prevToken || [TokenType.BracketStart, TokenType.Comma].includes(prevToken.type)) {
+        newTokens.push({
+          type: TokenType.Number,
+          value: '0'
+        })
+      }
+    }
+    newTokens.push(token)
+    if (token.type !== TokenType.Whitespace) {
+      prevToken = token
+    }
   }
-  return tokens
+  return newTokens
 }
 
 function addBrackets (tokens: Token[], count: number, type: TokenType.BracketStart | TokenType.BracketEnd, toStart = false) {

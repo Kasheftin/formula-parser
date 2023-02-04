@@ -2,28 +2,28 @@ import { TokenType, TokenNode } from './types'
 import { NodeGenerator } from './nodeGenerator'
 import { Lexer } from './lexer'
 import { Tokenizer } from './tokenizer'
-import { FixFirstMinus } from './operatorPrecedence'
+import { FixNegative } from './operatorPrecedence'
 
 const tests: [string, TokenNode[]][] = []
 
-tests.push(['1+2*3', [{
+tests.push(['2*3+1', [{
   type: TokenType.Operator,
-  value: '*',
+  value: '+',
   innerNodes: [{
     type: TokenType.Operator,
-    value: '+',
+    value: '*',
     innerNodes: [{
       type: TokenType.Number,
-      value: '1',
+      value: '2',
       innerNodes: []
     }, {
       type: TokenType.Number,
-      value: '2',
+      value: '3',
       innerNodes: []
     }]
   }, {
     type: TokenType.Number,
-    value: '3',
+    value: '1',
     innerNodes: []
   }]
 }]])
@@ -287,7 +287,7 @@ tests.push(['if (1<2,3,4)', [{
 
 describe('NodeGenerator(Lexer(formula, Tokenizer))', () => {
   test.each(tests)('should split %s to tokens correctly and generate binary tree', (formula, tokenNodes) => {
-    const result = NodeGenerator(FixFirstMinus(Lexer(formula, Tokenizer)))
+    const result = NodeGenerator(FixNegative(Lexer(formula, Tokenizer)))
     expect(result).toEqual(tokenNodes)
   })
 })

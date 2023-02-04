@@ -33,7 +33,7 @@ export function Tokenizer ({ match, skip, prev }: LexerStream): TokenType {
 
   const numberRegex = /^[-]?\d*\.?\d+/
   if (match(numberRegex, false)) {
-    if (prev && [TokenType.Number, TokenType.BracketEnd, TokenType.ReferenceBracketEnd].includes(prev) && match(/^-/, true)) {
+    if (prev && [TokenType.Number, TokenType.String, TokenType.BracketEnd, TokenType.ReferenceBracketEnd].includes(prev) && match(/^-/, true)) {
       return TokenType.Operator
     } else {
       match(numberRegex, true)

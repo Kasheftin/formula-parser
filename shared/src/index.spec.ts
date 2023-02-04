@@ -1,6 +1,6 @@
 import { getTokenNodes, evaluateTokenNodes } from './index'
 
-const getPropertyValue = (param: string) => {
+const getReferenceValue = (param: string) => {
   if (param.startsWith('n:') || param.startsWith('s:')) {
     return param.substring(2)
   } else {
@@ -31,9 +31,13 @@ tests.push(['if (1<2,1,2)', '1'])
 tests.push(['if(0.1 < 0.3, "correct math", "incorrect math")', 'correct math'])
 tests.push(['if(0.1 + 0.2 = 0.3, "correct math", "incorrect math")', 'correct math'])
 tests.push(['uppercase(if(max({n:5} ^ 2 - 3, 20, {n:17}, 30 / 4) < 16, "here", "there"))', 'THERE'])
+tests.push(['max(-round(5.5), 3)', '3'])
+tests.push(['min(-round(5.4) * 3, -ceil(5.5))', '-15'])
+tests.push(['"1" + "2"', '3'])
+tests.push(['"1" & "2"', '12'])
 describe('evaluator', () => {
   test.each(tests)('%s = %s', (formula, result) => {
     const tokenNodes = getTokenNodes(formula)
-    expect(evaluateTokenNodes(tokenNodes, getPropertyValue)).toBe(result)
+    expect(evaluateTokenNodes(tokenNodes, getReferenceValue)).toBe(result)
   })
 })

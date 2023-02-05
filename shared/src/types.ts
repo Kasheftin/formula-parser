@@ -20,6 +20,14 @@ export enum TokenType {
   Error = 'Error'
 }
 
+export const operatorAllowedAfter = [
+  TokenType.Number,
+  TokenType.BracketEnd,
+  TokenType.ReferenceBracketEnd,
+  TokenType.QuoteEnd,
+  TokenType.DoubleQuoteEnd
+]
+
 export type Token = {
   type: TokenType,
   value: string
@@ -33,4 +41,30 @@ export interface LexerStream {
   match: (pattern: RegExp, consume: boolean) => string | null
   skip: () => void
   prev: TokenType | null
+}
+
+export enum ErrorType {
+  UnexpectedOperator = 'UnexpectedOperator',
+  ValueRequiredAfterOperator = 'ValueRequiredAfterOperator',
+  OperatorRequiredBeforeNumber = 'OperatorRequiredBeforeNumber',
+  OperatorRequiredBeforeFunction = 'OperatorRequiredBeforeFunction',
+  OperatorRequiredBeforeQuote = 'OperatorRequiredBeforeQuote',
+  OperatorRequiredBeforeBracket = 'OperatorRequiredBeforeBracket',
+  OperatorRequiredBeforeReference = 'OperatorRequiredBeforeReference',
+  InvalidFunction = 'InvalidFunction',
+  InvalidCharacter = 'InvalidCharacter',
+  UnexpectedComma = 'UnexpectedComma',
+  UnexpectedBracket = 'UnexpectedBracket',
+  UnexpectedReferenceBracket = 'UnexpectedReferenceBracket',
+  ReferenceNameRequiredInBrackets = 'ReferenceNameRequiredInBrackets',
+  UnclosedQuote = 'UnclosedQuote',
+  UnclosedDoubleQuote = 'UnclosedDoubleQuote',
+  UnclosedBracket = 'UnclosedBracket',
+  UnclosedReferenceBracket = 'UnclosedReferenceBracket'
+}
+
+export type ValidationError = {
+  token: Token,
+  tokenIndex: number,
+  errorType: ErrorType
 }

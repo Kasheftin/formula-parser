@@ -27,12 +27,12 @@ export function OperatorPrecedence (tokens: Token[]) {
 }
 
 // Fix the formula like "-sin(1)" - add 0 at the begining
-export function FixNegative (tokens: Token[]) {
+export function FixOperatorsAtTheBegining (tokens: Token[]) {
   const newTokens: Token[] = []
   let prevToken: Token | null = null
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]
-    if (token.type === TokenType.Operator && token.value === '-') {
+    if (token.type === TokenType.Operator && '+-'.includes(token.value)) {
       if (!prevToken || [TokenType.BracketStart, TokenType.Comma].includes(prevToken.type)) {
         newTokens.push({
           type: TokenType.Number,

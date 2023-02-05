@@ -1,4 +1,4 @@
-import { LexerStream, TokenType } from './types'
+import { LexerStream, operatorAllowedAfter, TokenType } from './types'
 
 export function Tokenizer ({ match, skip, prev }: LexerStream): TokenType {
   if (prev !== TokenType.QuoteStart && match(/^"/, true)) {
@@ -22,18 +22,28 @@ export function Tokenizer ({ match, skip, prev }: LexerStream): TokenType {
   }
 
   if (prev === TokenType.DoubleQuoteStart) {
-    match(/^([^"\\]|\\.)+(?=")/, true)
-    return TokenType.String
+    if (match(/^([^"\\]|\\.)+(?=")/, false)) {
+      match(/^([^"\\]|\\.)+(?=")/, true)
+      return TokenType.String
+    } else {
+      match(/^([^"\\]|\\.)+/, true)
+      return TokenType.String
+    }
   }
 
   if (prev === TokenType.QuoteStart) {
-    match(/^([^'\\]|\\.)+(?=')/, true)
-    return TokenType.String
+    if (match(/^([^'\\]|\\.)+(?=')/, false)) {
+      match(/^([^'\\]|\\.)+(?=')/, true)
+      return TokenType.String
+    } else {
+      match(/^([^'\\]|\\.)+/, true)
+      return TokenType.String
+    }
   }
 
-  const numberRegex = /^[-]?\d*\.?\d+/
+  const numberRegex = /^[-+]?\d*\.?\d+/
   if (match(numberRegex, false)) {
-    if (prev && [TokenType.Number, TokenType.String, TokenType.BracketEnd, TokenType.ReferenceBracketEnd].includes(prev) && match(/^-/, true)) {
+    if (prev && operatorAllowedAfter.includes(prev) && match(/^[-+]/, true)) {
       return TokenType.Operator
     } else {
       match(numberRegex, true)
@@ -41,8 +51,14 @@ export function Tokenizer ({ match, skip, prev }: LexerStream): TokenType {
     }
   }
 
-  if (prev === TokenType.ReferenceBracketStart && match(/^[^{}]+(?=\})/, true)) {
-    return TokenType.ReferenceName
+  if (prev === TokenType.ReferenceBracketStart) {
+    if (match(/^[^{}]+(?=\})/, false)) {
+      match(/^[^{}]+(?=\})/, true)
+      return TokenType.ReferenceName
+    } else if (match(/^[^{}]+/, false)) {
+      match(/^[^{}]+/, true)
+      return TokenType.ReferenceName
+    }
   }
 
   const rest: [RegExp, TokenType][] = [

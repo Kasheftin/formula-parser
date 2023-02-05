@@ -1,6 +1,6 @@
 import { Lexer } from './lexer'
 import { Tokenizer } from './tokenizer'
-import { OperatorPrecedence, FixNegative } from './operatorPrecedence'
+import { OperatorPrecedence, FixOperatorsAtTheBegining } from './operatorPrecedence'
 
 const tests: [string, string][] = []
 
@@ -18,7 +18,7 @@ tests.push(['1 < 2 + 3', '( (1) < (2+3) )'])
 
 describe('OperatorPrecedence', () => {
   test.each(tests)('%s should be wrapped as %s', (formula, result) => {
-    const tokens = OperatorPrecedence(FixNegative(Lexer(formula, Tokenizer)))
+    const tokens = OperatorPrecedence(FixOperatorsAtTheBegining(Lexer(formula, Tokenizer)))
     expect(tokens.map(token => token.value).join('').replace(/\s/g, '')).toBe(result.replace(/\s/g, ''))
   })
 })

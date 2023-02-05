@@ -35,6 +35,22 @@ tests.push(['max(-round(5.5), 3)', '3'])
 tests.push(['min(-round(5.4) * 3, -ceil(5.5))', '-15'])
 tests.push(['"1" + "2"', '3'])
 tests.push(['"1" & "2"', '12'])
+
+tests.push(['-5 + 1', '-4'])
+tests.push(['+5 + 1', '6'])
+tests.push(['-max(2,3)', '-3'])
+tests.push(['+max(2,3)', '3'])
+
+tests.push(['if(max(+{n:1}, -{n:-2}) = 2, "ok", "fail")', 'ok'])
+
+tests.push(['if(5 > 4, "+" : "") & 34', '+34'])
+
+tests.push(['"5"+4', '9'])
+
+tests.push(['(-5-(-(4-3)))', '-4'])
+
+tests.push(['() + () - 1', '-1'])
+
 describe('evaluator', () => {
   test.each(tests)('%s = %s', (formula, result) => {
     const tokenNodes = getTokenNodes(formula)

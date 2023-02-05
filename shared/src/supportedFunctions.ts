@@ -161,7 +161,7 @@ export function executeFunction (name: string, parameters: string[]) {
   return ''
 }
 
-export function hasFunction (name: string) {
+export function functionIsSupported (name: string) {
   name = name.toLowerCase()
   return (name in supportedFunctions)
 }

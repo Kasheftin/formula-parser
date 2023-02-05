@@ -145,6 +145,14 @@ tests.push(['if (1<2,3,4)', [
   { type: TokenType.BracketEnd, value: ')' }
 ]])
 
+tests.push(['-5', [
+  { type: TokenType.Number, value: '-5' }
+]])
+
+tests.push(['+5', [
+  { type: TokenType.Number, value: '+5' }
+]])
+
 describe('Lexer(formula, Tokenizer)', () => {
   test.each(tests)('should split %s to tokens correctly and join tokens back to initial formula', (formula, tokens) => {
     const result = Lexer(formula, Tokenizer)

@@ -1,5 +1,5 @@
 import { NodeGenerator } from './nodeGenerator'
-import { FixNegative, OperatorPrecedence } from './operatorPrecedence'
+import { FixOperatorsAtTheBegining, OperatorPrecedence } from './operatorPrecedence'
 import { Lexer } from './lexer'
 import { Tokenizer } from './tokenizer'
 import { TokenNode } from './types'
@@ -10,7 +10,7 @@ export function getTokens (formula: string) {
 }
 
 export function getTokenNodes (formula: string) {
-  return NodeGenerator(OperatorPrecedence(FixNegative(Lexer(formula, Tokenizer))))
+  return NodeGenerator(OperatorPrecedence(FixOperatorsAtTheBegining(Lexer(formula, Tokenizer))))
 }
 
 export function evaluateTokenNodes (tokenNodes: TokenNode[], getPropertyValue: (v: string) => string) {

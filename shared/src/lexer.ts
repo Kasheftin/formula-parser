@@ -4,8 +4,8 @@ import { Token, TokenType } from './types'
 export function Lexer (formula: string, tokenizer: typeof Tokenizer) {
   const tokens: Token[] = []
   let position = 0
-  const skip = () => {
-    position++
+  const skip = (amount = 1) => {
+    position += amount
   }
   const match = (pattern: RegExp, move: boolean) => {
     const match = formula.substring(position).match(pattern)

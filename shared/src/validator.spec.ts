@@ -1,5 +1,5 @@
 import { ErrorType, Token, TokenType, ValidationError } from './types'
-import { CircularReferencesValidator, Validator } from './validator'
+import { CircularReferencesValidator, TokenDependenciesDeep, Validator } from './validator'
 import { getTokens } from './index'
 
 const tests: [string, ErrorType[]][] = []
@@ -51,6 +51,26 @@ describe('Validator(Lexer(formula, Tokenizer), supportedRefs[])', () => {
   })
 })
 
+const dependenciesDeepTests: [Record<string, string>, Record<string, string[]>][] = []
+dependenciesDeepTests.push([
+  { a: '1', b: '{a} + {c}', c: '{a}' },
+  { a: [], b: ['a', 'c'], c: ['a'] }
+])
+dependenciesDeepTests.push([
+  { a: '{ref}', ReF: '{b}', B: 'round({a})', d: '{e}' },
+  { a: ['a', 'b', 'ref'], ref: ['a', 'b', 'ref'], b: ['a', 'b', 'ref'], d: [] }
+])
+
+describe('TokenDependenciesDeep', () => {
+  test.each(dependenciesDeepTests)('should build dependency tree for %s as %s', (allFormulas, result) => {
+    const tokensByReferences = Object.entries(allFormulas).reduce((out: Record<string, Token[]>, [referenceName, formula]) => {
+      out[referenceName] = getTokens(formula)
+      return out
+    }, {})
+    expect(TokenDependenciesDeep(tokensByReferences)).toEqual(result)
+  })
+})
+
 const circularTests: [string, string, Record<string, string>, ValidationError[]][] = []
 circularTests.push([
   'c',
@@ -86,7 +106,7 @@ describe('CircularReferencesValidator', () => {
       out[referenceName] = getTokens(formula)
       return out
     }, {})
-    const result = CircularReferencesValidator(referenceName, tokens, tokensByReferences)
+    const result = CircularReferencesValidator(referenceName, { ...tokensByReferences, [referenceName]: tokens })
     expect(result).toEqual(errors)
   })
 })

@@ -63,11 +63,23 @@ export enum ErrorType {
   UnclosedBracket = 'UnclosedBracket',
   UnclosedReferenceBracket = 'UnclosedReferenceBracket',
   CircularReference = 'CircularReference',
-  CircularReferenceToItself = 'CircularReferenceToItself'
+  CircularReferenceToItself = 'CircularReferenceToItself',
+  DependsOnInvalid = 'DependsOnInvalid',
+  DependsOnCircular = 'DependsOnCircular'
 }
 
 export type ValidationError = {
-  token: Token,
-  tokenIndex: number,
+  token?: Token,
+  tokenIndex?: number,
   errorType: ErrorType
+}
+
+export type ExtendedFormulaEntry = {
+  referenceName: string,
+  formula: string,
+  tokens: Token[],
+  tokenNodes: TokenNode[],
+  validationErrors: ValidationError[],
+  order: number,
+  dependencies: string[]
 }

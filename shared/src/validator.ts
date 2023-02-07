@@ -138,11 +138,12 @@ export function Validator (tokens: Token[], supportedRefs?: string[]) {
   return errors
 }
 
-export function CircularReferencesValidator (referenceName: string, tokens: Token[], tokensByReferences: Record<string, Token[]>) {
-  const errors: ValidationError[] = []
+export function TokenDependenciesDeep (tokensByReferences: Record<string, Token[]>) {
   const dependencyMap: Record<string, string[]> = {}
-  const addToMap = (referenceName: string, tokens: Token[]) => {
+  const definedReferences: Record<string, boolean> = {}
+  Object.entries(tokensByReferences).forEach(([referenceName, tokens]) => {
     referenceName = referenceName.toLowerCase()
+    definedReferences[referenceName] = true
     tokens.forEach((token) => {
       if (token.type === TokenType.ReferenceName) {
         if (!dependencyMap[referenceName]) {
@@ -151,12 +152,7 @@ export function CircularReferencesValidator (referenceName: string, tokens: Toke
         dependencyMap[referenceName].push(token.value.toLowerCase())
       }
     })
-  }
-  Object.entries(tokensByReferences).forEach(([referenceName, tokens]) => {
-    addToMap(referenceName, tokens)
   })
-  addToMap(referenceName, tokens)
-
   const getAllReferences = (referenceName: string) => {
     const dependencies: Record<string, boolean> = {}
     const processedReferences: Record<string, boolean> = {}
@@ -172,21 +168,30 @@ export function CircularReferencesValidator (referenceName: string, tokens: Toke
     run(referenceName)
     return dependencies
   }
+  return Object.keys(tokensByReferences).reduce((out: Record<string, string[]>, referenceName) => {
+    referenceName = referenceName.toLowerCase()
+    out[referenceName] = Object.keys(getAllReferences(referenceName))
+      .filter(key => definedReferences[key])
+      .sort((key1, key2) => key1.localeCompare(key2))
+    return out
+  }, {})
+}
 
+export function CircularReferencesValidator (referenceName: string, tokensByReferences: Record<string, Token[]>) {
+  const tokens = tokensByReferences[referenceName] || []
   referenceName = referenceName.toLowerCase()
+  const errors: ValidationError[] = []
+  const dependenciesByReferences = TokenDependenciesDeep(tokensByReferences)
   for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
     const token = tokens[tokenIndex]
     if (token.type === TokenType.ReferenceName) {
       const tokenReferenceName = token.value.toLowerCase()
       if (tokenReferenceName === referenceName) {
         errors.push({ token, tokenIndex, errorType: ErrorType.CircularReferenceToItself })
-      } else {
-        if (getAllReferences(tokenReferenceName)[referenceName]) {
-          errors.push({ token, tokenIndex, errorType: ErrorType.CircularReference })
-        }
+      } else if (dependenciesByReferences[tokenReferenceName]?.includes(referenceName)) {
+        errors.push({ token, tokenIndex, errorType: ErrorType.CircularReference })
       }
     }
   }
-
   return errors
 }

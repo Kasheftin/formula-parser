@@ -29,7 +29,7 @@ const unclosedErrorMap: Partial<Record<TokenType, ErrorType>> = {
 
 export function Validator (tokens: Token[], supportedRefs?: string[]) {
   const errors: ValidationError[] = []
-  const unclosedTokens: { token: Token; tokenIndex: number, type: TokenType }[] = []
+  const unclosedTokens: { token: Token; tokenIndex: number; type: TokenType }[] = []
   const supportedRefsLowerCase = supportedRefs?.map(ref => ref.toLowerCase())
   let functionLevel = 0
   let prev: Token | null = null

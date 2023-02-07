@@ -77,9 +77,9 @@ The process looks familiar to ones who remember RPN (reverse polish notation) an
 
 Here's the full [source code](https://github.com/Kasheftin/formula-parser/shared/src/nodeGenerator.ts) of the described process covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/nodeGenerator.spec.ts).
 
-## Hanging negatives issue
+## Operators at the begining issue
 
-There's a small issue for formulas like `max(-round(5.5), -round(6.5))`. Minuses kind of hanging in the air, their operation nodes will have only one child while subtract operation requires 2 arguments. It can be solved in several ways. We just prepend every hanging minus with zero. We count minus as hanging if there're no previous tokens or if the previous token is opening bracket or comma.
+There's a small issue for formulas like `max(-round(5.5), -round(6.5))`. Minuses kind of hanging in the air, their operation nodes has only one child while subtract operation requires 2 arguments. It can be solved in several ways. We just prepend every hanging `±` operator with zero. We count `±` as hanging if there're no previous tokens or if the previous token is opening bracket or comma.
 
 ## Operator precedence
 
@@ -98,21 +98,89 @@ Here's the full [source code](https://github.com/Kasheftin/formula-parser/shared
 
 ## Evaluation
 
-The evaluation is straight forward. We recursivelly process the node tree and apply the corresponding operations. Worth mentioning that all the process, described above we do once per formula. We prepare node tree and cache it, and then we can calculate the formula results for many items very quickly. That's why we export 3 functions: 
-- `getTokens` takes the formula and returns a flat list of tokens (required for validation),
+The evaluation is straight forward. We recursivelly process the node tree and apply the corresponding operations. Worth mentioning that all the process, described above we do once per formula. We prepare node tree and cache it, and then we can calculate the formula results for many items very quickly. That's why we export 2 separate functions:
 - `getTokenNodes` takes the formula and returns a token tree,
-- `evaluateTokenNodes` takes the token tree and the function which should return value by reference name.
+- `evaluateTokenNodes` takes the token tree and the function which should return value by reference name (getter) and calculates the result.
 
-The full list of supported functions is specified in [supportedFunctions.ts](https://github.com/Kasheftin/formula-parser/shared/src/supportedFunctions.ts). It can be easily expanded. For the demo purpose there's an implementation of such functions as `round`, `ceil`, `floor`, `max`, `min`, `lte`, `gte` etc. We also support strings both in single and double quotes but for string concatination we use `&` instead of `+`. Basically, we consider every formula variabla as a string, hence `"1"+"2"="3"` while `"1"&"2"="12"`. 
+````TypeScript
+const formula = 'floor({estimation} - {buget} * {loggedTime})'
+const tokenNodes = getTokenNodes(formula)
 
-Usage examples might be found in [evaluations tests](https://github.com/Kasheftin/formula-parser/shared/src/index.spec.ts).
+const item = {
+  id: 1,
+  title: 'Sample'
+  estimation: 8,
+  budget: 3,
+  loggedTime: 2.2
+}
 
-## Validation
+const getItemProperty = (propertyName: string) => (item[propertyName] || '').toString()
+
+const result = evaluateTokenNodes(tokenNodes, getItemProperty) // returns floor(8 - 3 * 2.2) = 1
+````
+
+The full list of supported functions is specified in [supportedFunctions.ts](https://github.com/Kasheftin/formula-parser/shared/src/supportedFunctions.ts). It can be easily expanded. For the demo purpose there's an implementation of such functions as `round`, `ceil`, `floor`, `max`, `min`, `lte`, `gte` etc. Strings both in single and double quotes are also supported, but for concatination we use `&` instead of `+`. Basically, we consider every formula variable as a number, hence `"1"+"2"="3"`, `"1"+"a"="NaN"`, and `"1"&"2"="12"`. 
+
+Many usage examples might be found in [evaluations tests](https://github.com/Kasheftin/formula-parser/shared/src/index.spec.ts).
+
+## Syntax validation
 
 At the first glance it seems we should use evaluation code for validation. We can try to evaluate the formula, catch the error, and attach it to the corresponding node. But there're some caveats with this approach. 
-- We modify the formula quite a lot, and it becomes hard to trace back the error. 
+- We modify the formula quite a lot, and it becomes hard to trace back the original error location. 
 - If there're several errors, we want to highlight them all. 
-- Evaluation requires the reference data, it's not clear what it should be.
+- Evaluation requires the reference data, it's not clear what to substitute to the evaluator.
 
-That's why the validation process goes separately from the evaluation. And, in general, it's more strict.
+That's why the validation process goes separately from the evaluation. And, in general, it's more strict then the evaluation itself. 
 
+We iterate over the tokes array, and check if every token is valid. All the checks involve checking what the previous token is. We count opening/closing brackets as well. We have a strictly defined set of token types, that's why it's not hard to consider them all. For example, an operator (`±×÷^<=>`) can go only after `Number, BracketEnd, ReferenceBracketEnd, QuoteEnd, DoubleQuoteEnd`. The same time, `-(+round(5.4))` might be considered as a valid formula. Hence,
+
+````Typescript
+const operatorAllowedAfter = [
+  TokenType.Number,
+  TokenType.BracketEnd,
+  TokenType.ReferenceBracketEnd,
+  TokenType.QuoteEnd,
+  TokenType.DoubleQuoteEnd
+]
+
+if (token.type === 'Operator' && !'+-'.includes(token.value)) {
+  if (!prev || !operatorAllowedAfter.includes(prev.type)) {
+    addError('UnexpectedOperator')
+  }
+}
+````
+
+The full validator code is [here](https://github.com/Kasheftin/formula-parser/shared/src/validator.ts). It's covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/validator.spec.ts).
+
+## Circular references validation
+
+Suppose a user can define formulas and somehow save them. Every formula can be referred from another formula by name. Then we need to validate the system against circular references. 
+
+````TypeScript
+const formulasByReferences: Record<string, string> = {
+  'pricePerHour': '5',
+  'totalCost': '{pricePerHour} * {loggedTime}',
+  'budgetLeft': '{budget} - {totalCost}',
+  'budgetLeftDecreased': '{budgetLeftDescreased} * 0.9'
+  'a': '1',
+  'b': '{a} + {c} + 1',
+  'c': '{b} + {a}',
+  'd': '{b}'
+}
+
+getCircularErrors('budgetLeft') 
+// returns empty, formula is valid
+
+getCircularErrors('budgetLeftDecreased') 
+// returns circular error, formula depends on itself
+
+getCircularErrors('b')
+// returns circular error: {b} depends on {c} which depends back on {b}
+
+getCircularErrors('d')
+// returns empty: despite {d} depends on {b} which has cicular reference, {d} formula is valid by itself
+````
+
+## Wrapping things up
+
+The last step is to consider all the defined formulas alltogether. We have to prepare all the tokens and token trees, then order formulas and validate everything. Ordering is required because we need to evaluate dependant formulas after their dependencies. Also, if a formula depends on another formula which has validation errors, it should be marked as `depends-on-invalid` itself, and it's evaluation should be skipped.   

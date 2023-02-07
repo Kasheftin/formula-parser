@@ -29,7 +29,7 @@ export const operatorAllowedAfter = [
 ]
 
 export type Token = {
-  type: TokenType,
+  type: TokenType
   value: string
 }
 
@@ -69,17 +69,17 @@ export enum ErrorType {
 }
 
 export type ValidationError = {
-  token?: Token,
-  tokenIndex?: number,
+  token?: Token
+  tokenIndex?: number
   errorType: ErrorType
 }
 
 export type ExtendedFormulaEntry = {
-  referenceName: string,
-  formula: string,
-  tokens: Token[],
-  tokenNodes: TokenNode[],
-  validationErrors: ValidationError[],
-  order: number,
+  referenceName: string
+  formula: string
+  tokens: Token[]
+  tokenNodes: TokenNode[]
+  validationErrors: ValidationError[]
+  order: number
   dependencies: string[]
 }

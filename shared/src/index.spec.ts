@@ -6,6 +6,10 @@ const getReferenceValue = (referenceName: string) => {
     return '4.5'
   } else if (referenceNameLowerCase === 'trackedtime') {
     return '2'
+  } else if (referenceNameLowerCase === 'a') {
+    return '10'
+  } else if (referenceNameLowerCase === 'b') {
+    return '20'
   } else if (referenceNameLowerCase.startsWith('n:') || referenceNameLowerCase.startsWith('s:')) {
     return referenceName.substring(2)
   } else {
@@ -70,6 +74,11 @@ tests.push(['() + () - 1', '-1'])
 tests.push(['max(1,2,50)', '50'])
 tests.push(['min({estimation}, {trackedTime})', '2'])
 tests.push(['min({estimation}, {trackedTime}, "asdasd")', 'NaN'])
+
+tests.push(['1 + 2 * 2', '5'])
+tests.push(['(1 + 2) * 2', '6'])
+tests.push(['1 + ({a} + {b})', '31'])
+tests.push(['({b} + {a}) * ({b} - {a})', '300'])
 
 describe('evaluator', () => {
   test.each(tests)('%s = %s', (formula, result) => {

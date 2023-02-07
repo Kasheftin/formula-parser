@@ -5,6 +5,7 @@ import { getTokens } from './index'
 const tests: [string, ErrorType[]][] = []
 tests.push(['1 + 2', []])
 tests.push([' + 2', []])
+tests.push(['"hello" & "world"', []])
 tests.push(['-(-round({x}))', []])
 tests.push(['-(-invalidFunctionName({x}))', [ErrorType.InvalidFunction]])
 tests.push(['*2', [ErrorType.UnexpectedOperator]])

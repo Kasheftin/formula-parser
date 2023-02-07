@@ -57,10 +57,13 @@ export enum ErrorType {
   UnexpectedBracket = 'UnexpectedBracket',
   UnexpectedReferenceBracket = 'UnexpectedReferenceBracket',
   ReferenceNameRequiredInBrackets = 'ReferenceNameRequiredInBrackets',
+  UnsupportedReferenceName = 'UnsupportedReferenceName',
   UnclosedQuote = 'UnclosedQuote',
   UnclosedDoubleQuote = 'UnclosedDoubleQuote',
   UnclosedBracket = 'UnclosedBracket',
-  UnclosedReferenceBracket = 'UnclosedReferenceBracket'
+  UnclosedReferenceBracket = 'UnclosedReferenceBracket',
+  CircularReference = 'CircularReference',
+  CircularReferenceToItself = 'CircularReferenceToItself'
 }
 
 export type ValidationError = {

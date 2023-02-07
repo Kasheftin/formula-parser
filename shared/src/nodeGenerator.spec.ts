@@ -285,6 +285,20 @@ tests.push(['if (1<2,3,4)', [{
   }]
 }]])
 
+tests.push(['round((5))', [{
+  type: TokenType.FunctionName,
+  value: 'round',
+  innerNodes: [{
+    type: TokenType.Group,
+    value: '',
+    innerNodes: [{
+      type: TokenType.Number,
+      value: '5',
+      innerNodes: []
+    }]
+  }]
+}]])
+
 describe('NodeGenerator(Lexer(formula, Tokenizer))', () => {
   test.each(tests)('should split %s to tokens correctly and generate binary tree', (formula, tokenNodes) => {
     const result = NodeGenerator(FixOperatorsAtTheBegining(Lexer(formula, Tokenizer)))

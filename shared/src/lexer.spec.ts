@@ -153,6 +153,15 @@ tests.push(['+5', [
   { type: TokenType.Number, value: '+5' }
 ]])
 
+tests.push(["uppercase('')", [
+  { type: TokenType.FunctionName, value: 'uppercase' },
+  { type: TokenType.BracketStart, value: '(' },
+  { type: TokenType.QuoteStart, value: "'" },
+  { type: TokenType.String, value: '' },
+  { type: TokenType.QuoteEnd, value: "'" },
+  { type: TokenType.BracketEnd, value: ')' }
+]])
+
 describe('Lexer(formula, Tokenizer)', () => {
   test.each(tests)('should split %s to tokens correctly and join tokens back to initial formula', (formula, tokens) => {
     const result = Lexer(formula, Tokenizer)

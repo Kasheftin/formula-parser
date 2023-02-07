@@ -1,8 +1,13 @@
 import { getTokenNodes, evaluateTokenNodes } from './index'
 
-const getReferenceValue = (param: string) => {
-  if (param.startsWith('n:') || param.startsWith('s:')) {
-    return param.substring(2)
+const getReferenceValue = (referenceName: string) => {
+  const referenceNameLowerCase = referenceName.toLowerCase()
+  if (referenceNameLowerCase === 'estimation') {
+    return '4.5'
+  } else if (referenceNameLowerCase === 'trackedtime') {
+    return '2'
+  } else if (referenceNameLowerCase.startsWith('n:') || referenceNameLowerCase.startsWith('s:')) {
+    return referenceName.substring(2)
   } else {
     return ''
   }
@@ -36,20 +41,35 @@ tests.push(['min(-round(5.4) * 3, -ceil(5.5))', '-15'])
 tests.push(['"1" + "2"', '3'])
 tests.push(['"1" & "2"', '12'])
 
+tests.push(['ceil(3.95, 1)', '4'])
+tests.push(['ceil(3.95, 2)', '3.95'])
+tests.push(['ceil(3.941, 2)', '3.95'])
+
+tests.push(['round(3.2342, 2)', '3.23'])
+tests.push(['round(3, 2)', '3'])
+tests.push(['round(3.1, 2, 1)', '3.10'])
+
+tests.push(['floor({estimation}/{trackedTime}, 1)', '2.2'])
+tests.push(['ceil({estimation}/{trackedTime}, 1)', '2.3'])
+tests.push(['CEIL({ESTIMATION}/{tRackEdTime}, 1)', '2.3'])
 tests.push(['-5 + 1', '-4'])
 tests.push(['+5 + 1', '6'])
 tests.push(['-max(2,3)', '-3'])
 tests.push(['+max(2,3)', '3'])
-
+tests.push(['add(1,2,3,4)', '10'])
+tests.push(['multiply(1,2,3,4)', '24'])
+tests.push(['subtract(40,10,20,5)', '5'])
+tests.push(['if({estimation} > 2, "Huge Estimation", "Small Estimation")', 'Huge Estimation'])
+tests.push(['if({estimation} > 20, "Huge Estimation")', ''])
+tests.push(['if({estimation} > 3, 5, 3) * 3', '15'])
 tests.push(['if(max(+{n:1}, -{n:-2}) = 2, "ok", "fail")', 'ok'])
-
 tests.push(['if(5 > 4, "+" : "") & 34', '+34'])
-
 tests.push(['"5"+4', '9'])
-
 tests.push(['(-5-(-(4-3)))', '-4'])
-
 tests.push(['() + () - 1', '-1'])
+tests.push(['max(1,2,50)', '50'])
+tests.push(['min({estimation}, {trackedTime})', '2'])
+tests.push(['min({estimation}, {trackedTime}, "asdasd")', 'NaN'])
 
 describe('evaluator', () => {
   test.each(tests)('%s = %s', (formula, result) => {

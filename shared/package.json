@@ -4,6 +4,7 @@
   "description": "Formula parser shared code",
   "scripts": {
     "test": "jest",
+    "test-coverage": "jest --coverage",
     "lint": "eslint ./src"
   },
   "author": "",

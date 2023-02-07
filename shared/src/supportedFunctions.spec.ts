@@ -54,6 +54,7 @@ tests.push(['add', ['0.1', '0.2'], '0.3'])
 tests.push(['add', ['0.1', '0.1', '0.1'], '0.3'])
 tests.push(['add', ['0.1349', '100.1', '0.1'], '100.3349'])
 tests.push(['add', [], '0'])
+tests.push(['add', ['0', 'asd'], 'NaN'])
 
 tests.push(['multiply', [], '1'])
 tests.push(['multiply', ['1', '0.1', '0.2'], '0.02'])

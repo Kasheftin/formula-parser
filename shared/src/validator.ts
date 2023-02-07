@@ -27,25 +27,20 @@ const unclosedErrorMap: Partial<Record<TokenType, ErrorType>> = {
   [TokenType.ReferenceName]: ErrorType.UnclosedReferenceBracket
 }
 
-export function Validator (tokens: Token[]) {
+export function Validator (tokens: Token[], supportedRefs?: string[]) {
   const errors: ValidationError[] = []
   const unclosedTokens: { token: Token; tokenIndex: number, type: TokenType }[] = []
+  const supportedRefsLowerCase = supportedRefs?.map(ref => ref.toLowerCase())
   let functionLevel = 0
+  let prev: Token | null = null
+  let prevIndex = 0
   for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
     const addError = (errorType: ErrorType) => errors.push({ token, tokenIndex, errorType })
     const token = tokens[tokenIndex]
-    const next = getClosestToken(tokens, tokenIndex, token => token.type !== TokenType.Whitespace, +1)
-    const prev = getClosestToken(tokens, tokenIndex, token => token.type !== TokenType.Whitespace, -1)
 
-    if (token.type === TokenType.Operator) {
+    if (token.type === TokenType.Operator && !'+-'.includes(token.value)) {
       if (!prev || !operatorAllowedAfter.includes(prev.type)) {
-        // -(-sin({x})) is allowed syntax
-        if (!'+-'.includes(token.value) || !next || ![TokenType.Number, TokenType.BracketStart, TokenType.ReferenceBracketStart, TokenType.FunctionName, TokenType.QuoteStart, TokenType.DoubleQuoteStart].includes(next.type)) {
-          addError(ErrorType.UnexpectedOperator)
-        }
-      }
-      if (!next) {
-        addError(ErrorType.ValueRequiredAfterOperator)
+        addError(ErrorType.UnexpectedOperator)
       }
     }
 
@@ -110,6 +105,10 @@ export function Validator (tokens: Token[]) {
       }
     }
 
+    if (token.type === TokenType.ReferenceName && token.value && supportedRefsLowerCase && !supportedRefsLowerCase.includes(token.value.toLowerCase())) {
+      addError(ErrorType.UnsupportedReferenceName)
+    }
+
     if (token.type === TokenType.ReferenceBracketEnd) {
       if (unclosedTokens.length && unclosedTokens[unclosedTokens.length - 1].type === TokenType.ReferenceName) {
         unclosedTokens.pop()
@@ -120,6 +119,15 @@ export function Validator (tokens: Token[]) {
         addError(ErrorType.UnexpectedReferenceBracket)
       }
     }
+
+    if (token.type !== TokenType.Whitespace) {
+      prev = token
+      prevIndex = tokenIndex
+    }
+  }
+
+  if (prev?.type === TokenType.Operator) {
+    errors.push({ token: prev, tokenIndex: prevIndex, errorType: ErrorType.ValueRequiredAfterOperator })
   }
 
   unclosedTokens.forEach(({ token, tokenIndex, type }) => {
@@ -130,11 +138,55 @@ export function Validator (tokens: Token[]) {
   return errors
 }
 
-function getClosestToken (tokens: Token[], index: number, match: (token: Token) => boolean, offset: number) {
-  for (let i = index + offset; (i >= 0 && i < tokens.length); i += offset) {
-    if (match(tokens[i])) {
-      return tokens[i]
+export function CircularReferencesValidator (referenceName: string, tokens: Token[], tokensByReferences: Record<string, Token[]>) {
+  const errors: ValidationError[] = []
+  const dependencyMap: Record<string, string[]> = {}
+  const addToMap = (referenceName: string, tokens: Token[]) => {
+    referenceName = referenceName.toLowerCase()
+    tokens.forEach((token) => {
+      if (token.type === TokenType.ReferenceName) {
+        if (!dependencyMap[referenceName]) {
+          dependencyMap[referenceName] = []
+        }
+        dependencyMap[referenceName].push(token.value.toLowerCase())
+      }
+    })
+  }
+  Object.entries(tokensByReferences).forEach(([referenceName, tokens]) => {
+    addToMap(referenceName, tokens)
+  })
+  addToMap(referenceName, tokens)
+
+  const getAllReferences = (referenceName: string) => {
+    const dependencies: Record<string, boolean> = {}
+    const processedReferences: Record<string, boolean> = {}
+    const run = (referenceName: string) => {
+      if (dependencyMap[referenceName] && !processedReferences[referenceName]) {
+        processedReferences[referenceName] = true
+        dependencyMap[referenceName].forEach((dependencyName) => {
+          dependencies[dependencyName] = true
+          run(dependencyName)
+        })
+      }
+    }
+    run(referenceName)
+    return dependencies
+  }
+
+  referenceName = referenceName.toLowerCase()
+  for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
+    const token = tokens[tokenIndex]
+    if (token.type === TokenType.ReferenceName) {
+      const tokenReferenceName = token.value.toLowerCase()
+      if (tokenReferenceName === referenceName) {
+        errors.push({ token, tokenIndex, errorType: ErrorType.CircularReferenceToItself })
+      } else {
+        if (getAllReferences(tokenReferenceName)[referenceName]) {
+          errors.push({ token, tokenIndex, errorType: ErrorType.CircularReference })
+        }
+      }
     }
   }
-  return null
+
+  return errors
 }

@@ -56,10 +56,5 @@ export function ExtendedTokens (formulasByReferences: Record<string, string>, su
       }
     })
   })
-  Object.values(out).forEach((entry) => {
-    if (!resolved[entry.referenceName] && !entry.validationErrors.length) {
-      entry.validationErrors.push({ errorType: ErrorType.DependsOnCircular })
-    }
-  })
   return out
 }

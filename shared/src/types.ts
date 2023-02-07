@@ -72,6 +72,7 @@ export type ValidationError = {
   token?: Token
   tokenIndex?: number
   errorType: ErrorType
+  message?: string
 }
 
 export type ExtendedFormulaEntry = {

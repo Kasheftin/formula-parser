@@ -10,7 +10,7 @@ We are going to implement formula parser which supports mathematical operators, 
 - A user can add columns of type `formula` and type in equation which can refer to other columns and formulas.
 - A syntax like `({budget}-{loggedTime}/3600*{pricePerHour})*0.9` should be supported.
 - Math operator precedence must be in place meaning `1+2*3` should evaluate to `7`.
-- Ifs and comparisons should be supported by the excel syntax, `if({a}<{b},{then},{else})`.
+- Ifs and comparisons should be supported by the excel syntax, `if({a}<{b},then,else})`.
 
 ### Links & Demo
 - https://github.com/Kasheftin/formula-parser - Source code
@@ -28,22 +28,9 @@ It does not filter out any characters from the input meaning if we join back tok
 
 ![Formula Tokenized](images/pic1.png)
 
-Every character should be colored. We introduce quite a lot of types to simplify the future work. Tokenization is straight forward process running in one cycle without recursion. On every step it iterates over the bunch of regular expressions, the first match cuts out the matching part and repeats from the start.
+Every character should be colored. We introduce quite a lot of types to simplify the future work. Tokenization is straight forward process running in one cycle without recursion. On every step it iterates over the regular expressions (order is important), the first match cuts out the matching part and repeats from the start. Since we don't use recursion, it's hard to tell if `)` is just a bracket or it belongs to a function. That's why we do not introduce different types of brackets.
 
-The most noticeable is that we distinguish minus operator and minus as negative number part. If the previous non-whitespace token is number or closing bracket, then it's defined as operator. Otherwise it's a part of a number:
-
-````TypeScript
-const numberRegex = /^[-]?\d*\.?\d+/
-if (match(numberRegex)) {
-  if (['Number', 'String', 'BracketEnd', 'ReferenceBracketEnd'].includes(previousToken) && match(/^-/)) {
-    return 'Operator'
-  } else {
-    return 'Number'
-  }
-}
-````
-
-At the same time, since we don't use recursion, it's hard to tell if `)` is just a bracket or it belongs to a function. That's why we do not introduce different types of brackets.
+Here's [Lexer](https://github.com/Kasheftin/formula-parser/shared/src/lexer.ts) and [Tokenizer](https://github.com/Kasheftin/formula-parser/shared/src/tokenizer.ts) source code covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/lexer.spec.ts).
 
 ## Node Generator
 
@@ -132,7 +119,7 @@ At the first glance it seems we should use evaluation code for validation. We ca
 
 That's why the validation process goes separately from the evaluation. And, in general, it's more strict then the evaluation itself. 
 
-We iterate over the tokes array, and check if every token is valid. All the checks involve checking what the previous token is. We count opening/closing brackets as well. We have a strictly defined set of token types, that's why it's not hard to consider them all. For example, an operator (`±×÷^<=>`) can go only after `Number, BracketEnd, ReferenceBracketEnd, QuoteEnd, DoubleQuoteEnd`. The same time, `-(+round(5.4))` might be considered as a valid formula. Hence,
+We iterate over the tokes array, and check if every token is valid. All the checks involve checking what the previous token is. We count opening/closing brackets as well. There's a strictly defined set of token types, it's not hard to iterate over them all. For example, an operator (`±×÷^<=>&`) can go only after `Number, BracketEnd, ReferenceBracketEnd, QuoteEnd, DoubleQuoteEnd`. The same time, `-(+round(5.4))` might be considered as a valid formula. Hence,
 
 ````Typescript
 const operatorAllowedAfter = [
@@ -168,19 +155,98 @@ const formulasByReferences: Record<string, string> = {
   'd': '{b}'
 }
 
-getCircularErrors('budgetLeft') 
-// returns empty, formula is valid
+getFormulaDependenciesDeep('budgetLeft') 
+// returns [budget, totalCost, pricePerHour, loggedTime], formula is valid
 
-getCircularErrors('budgetLeftDecreased') 
-// returns circular error, formula depends on itself
+getFormulaDependenciesDeep('budgetLeftDecreased') 
+// returns [budgetLeftDecreased], formula depends on itself, it's an error
 
-getCircularErrors('b')
-// returns circular error: {b} depends on {c} which depends back on {b}
+getFormulaDependenciesDeep('b')
+// returns [a, c, b], formula depends on itself, it's an error
 
-getCircularErrors('d')
-// returns empty: despite {d} depends on {b} which has cicular reference, {d} formula is valid by itself
+getFormulaDependenciesDeep('d')
+// returns [b, a, c, a], despite {d} depends on {b} which has cicular reference, {d} formula is valid
 ````
+
+We just iterate over the formulas and recursively collect every formula dependencies. If dependencies list includes the initial formula name, it throws a circular error. The same time, a formula `{a}` may depend on on formula `{b}` which has a circular reference inside like `{b}->{c}->{d}->{b}`. This case formula `{b}` throws a circular error while `{a}` is counted as valid. However `{a}` is not going to be evaluated because on the next step we are going to propogate all the errors up to dependant formulas. Since `{a}` depends on `{b}` which has circular error, `{a}` gets `depends-on-invalid` error.
 
 ## Wrapping things up
 
-The last step is to consider all the defined formulas alltogether. We have to prepare all the tokens and token trees, then order formulas and validate everything. Ordering is required because we need to evaluate dependant formulas after their dependencies. Also, if a formula depends on another formula which has validation errors, it should be marked as `depends-on-invalid` itself, and it's evaluation should be skipped.   
+The last step is to consider all the defined formulas alltogether. We have to prepare all the tokens and token trees, then order formulas and validate everything. Ordering is required because we need to evaluate dependant formulas after their dependencies. Also, if a formula depends on another formula which has validation errors, it should be marked as `depends-on-invalid`, and it's evaluation should be skipped.   
+
+````TypeScript
+type ExtendedFormulaEntry = {
+  referenceName: string
+  formula: string
+  tokens: Token[]
+  tokenNodes: TokenNode[]
+  validationErrors: ValidationError[]
+  dependencies: string[]
+  order: number
+}
+
+const formulasByRefs = {
+  'exp': '{budget}-{loggedTime}*{rate}',
+  'rate': '1.15'
+}
+
+const supportedRefs = ['budget', 'loggedTime']
+
+function getExtendedTokens (formulasByRefs, supportedRefs): Record<string, ExtendedFormulaEntry> {
+  // Initial definition
+  const out: Record<string, ExtendedFormulaEntry> = {}
+  const tokensByRefs: Record<string, Token[]> = {}
+  Object.entries(formulasByRefs).forEach(([ref, formula]) => {
+    referenceName = referenceName.toLowerCase()
+    tokensByRefs[referenceName] = getTokens(formula)
+    out[referenceName] = {
+      referenceName,
+      formula,
+      tokens: getTokens(formula),
+      tokenNodes: getTokenNodes(formula),
+      validationErrors: [],
+      dependencies: [],
+      order: 0
+    }
+  })
+
+  // Validation errors and deep dependencies
+  const allSupportedRefs = [...(supportedRefs || []), ...Object.keys(tokensByRefs)]
+  const dependenciesByRefs = getFormulasDependenciesDeep(tokensByRefs)
+  Object.values(out).forEach((entry) => {
+    const validationErrors = getValidationErrors(entry.tokens, allSupportedRefs)
+    const circularErrors = getCircularValidationErrors(entry.referenceName, tokensByRefs)
+    entry.validationErrors = [...validationErrors, ...circularErrors]
+    entry.dependencies = dependenciesByRefs[entry.referenceName] || []
+  })
+
+  // Ordering
+  const resolved: Record<string, boolean> = {}
+  let order = 1
+  let updated = true
+  while (updated) {
+    updated = false
+    Object.values(out).forEach((entry) => {
+      if (!resolved[entry.referenceName] && !entry.dependencies.some(ref => !resolved[ref])) {
+        entry.order = order
+        resolved[entry.referenceName] = true
+        updated = true
+      }
+    })
+    if (updated) {
+      order++
+    }
+  }
+
+  // Propogate errors up to dependant formulas
+  const orderedOut = Object.keys(out).sort((key1, key2) => out[key1].order - out[key2].order)
+  orderedOut.forEach((referenceName) => {
+    const entry = out[referenceName]
+    if (entry.dependencies.some(ref => out[ref]?.validationErrors.length) {
+      entry.validationErrors.push(ErrorType.DependsOnInvalid)
+    }
+  })
+}
+````
+
+Here's the full [extended token generator code](https://github.com/Kasheftin/formula-parser/shared/src/extendedTokens.ts) covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/extendedTokens.spec.ts).

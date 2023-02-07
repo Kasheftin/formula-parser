@@ -166,6 +166,10 @@ export function functionIsSupported (name: string) {
   return (name in supportedFunctions)
 }
 
+export function toNumberString (n: number) {
+  return Number(n.toFixed(12)).toString()
+}
+
 function paramAsBooleanIsSet (param?: string | undefined) {
   param = (param || '').toLowerCase()
   return param && param !== '0' && param !== 'false' && param !== 'no'
@@ -176,10 +180,6 @@ function stripLastZeroesAfterDot (param: string) {
     return param.replace(/0+$/, '').replace(/\.$/, '')
   }
   return param
-}
-
-function toNumberString (n: number) {
-  return Number(n.toFixed(12)).toString()
 }
 
 function compare (params: string[], operator: '<' | '<=' | '=' | '>=' | '>') {

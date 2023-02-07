@@ -90,14 +90,22 @@ tests.push(['-sin({f}*(5+{g}))', [{
 
 tests.push(['1+-2ss', [{
   type: TokenType.Operator,
-  value: '+',
+  value: '-',
   innerNodes: [{
-    type: TokenType.Number,
-    value: '1',
-    innerNodes: []
+    type: TokenType.Operator,
+    value: '+',
+    innerNodes: [{
+      type: TokenType.Number,
+      value: '1',
+      innerNodes: []
+    }, {
+      type: TokenType.Number,
+      value: '0',
+      innerNodes: []
+    }]
   }, {
     type: TokenType.Number,
-    value: '-2',
+    value: '2',
     innerNodes: []
   }]
 }]])
@@ -109,9 +117,17 @@ tests.push(['5.,', [{
 }]])
 
 tests.push(['-5.,', [{
-  type: TokenType.Number,
-  value: '-5',
-  innerNodes: []
+  type: TokenType.Operator,
+  value: '-',
+  innerNodes: [{
+    type: TokenType.Number,
+    value: '0',
+    innerNodes: []
+  }, {
+    type: TokenType.Number,
+    value: '5',
+    innerNodes: []
+  }]
 }]])
 
 tests.push(['-{f}+sdf()', [{
@@ -138,38 +154,46 @@ tests.push(['-{f}+sdf()', [{
 
 tests.push(['({field} - round(5.5)) * 2 + -1', [{
   type: TokenType.Operator,
-  value: '+',
+  value: '-',
   innerNodes: [{
     type: TokenType.Operator,
-    value: '*',
+    value: '+',
     innerNodes: [{
-      type: TokenType.Group,
-      value: '',
+      type: TokenType.Operator,
+      value: '*',
       innerNodes: [{
-        type: TokenType.Operator,
-        value: '-',
+        type: TokenType.Group,
+        value: '',
         innerNodes: [{
-          type: TokenType.ReferenceName,
-          value: 'field',
-          innerNodes: []
-        }, {
-          type: TokenType.FunctionName,
-          value: 'round',
+          type: TokenType.Operator,
+          value: '-',
           innerNodes: [{
-            type: TokenType.Number,
-            value: '5.5',
+            type: TokenType.ReferenceName,
+            value: 'field',
             innerNodes: []
+          }, {
+            type: TokenType.FunctionName,
+            value: 'round',
+            innerNodes: [{
+              type: TokenType.Number,
+              value: '5.5',
+              innerNodes: []
+            }]
           }]
         }]
+      }, {
+        type: TokenType.Number,
+        value: '2',
+        innerNodes: []
       }]
     }, {
       type: TokenType.Number,
-      value: '2',
+      value: '0',
       innerNodes: []
     }]
   }, {
     type: TokenType.Number,
-    value: '-1',
+    value: '1',
     innerNodes: []
   }]
 }]])

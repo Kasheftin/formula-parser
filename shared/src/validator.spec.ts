@@ -1,6 +1,6 @@
 import { ErrorType, Token, TokenType, ValidationError } from './types'
-import { CircularReferencesValidator, TokenDependenciesDeep, Validator } from './validator'
-import { getTokens } from './index'
+import { TokenDependenciesDeep, Validator } from './validator'
+import { getCircularValidationErrors, getTokens } from './index'
 
 const tests: [string, ErrorType[]][] = []
 tests.push(['1 + 2', []])
@@ -107,7 +107,7 @@ describe('CircularReferencesValidator', () => {
       out[referenceName] = getTokens(formula)
       return out
     }, {})
-    const result = CircularReferencesValidator(referenceName, { ...tokensByReferences, [referenceName]: tokens })
+    const result = getCircularValidationErrors(referenceName, { ...tokensByReferences, [referenceName]: tokens })
     expect(result).toEqual(errors)
   })
 })

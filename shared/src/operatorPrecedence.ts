@@ -33,7 +33,7 @@ export function FixOperatorsAtTheBegining (tokens: Token[]) {
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]
     if (token.type === TokenType.Operator && '+-'.includes(token.value)) {
-      if (!prevToken || [TokenType.BracketStart, TokenType.Comma].includes(prevToken.type)) {
+      if (!prevToken || [TokenType.BracketStart, TokenType.Comma, TokenType.Operator].includes(prevToken.type)) {
         newTokens.push({
           type: TokenType.Number,
           value: '0'

@@ -58,6 +58,7 @@ tests.push(['ceil({estimation}/{trackedTime}, 1)', '2.3'])
 tests.push(['CEIL({ESTIMATION}/{tRackEdTime}, 1)', '2.3'])
 tests.push(['-5 + 1', '-4'])
 tests.push(['+5 + 1', '6'])
+tests.push(['+-5+-+-+-5', '-10'])
 tests.push(['-max(2,3)', '-3'])
 tests.push(['+max(2,3)', '3'])
 tests.push(['add(1,2,3,4)', '10'])
@@ -79,6 +80,8 @@ tests.push(['1 + 2 * 2', '5'])
 tests.push(['(1 + 2) * 2', '6'])
 tests.push(['1 + ({a} + {b})', '31'])
 tests.push(['({b} + {a}) * ({b} - {a})', '300'])
+
+tests.push(['5 * (-2)', '-10'])
 
 describe('evaluator', () => {
   test.each(tests)('%s = %s', (formula, result) => {

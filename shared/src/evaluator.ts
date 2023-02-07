@@ -1,4 +1,4 @@
-import { Token, TokenNode, TokenType } from './types'
+import { TokenNode, TokenType } from './types'
 import { executeFunction, executeOperator } from './supportedFunctions'
 
 export function Evaluator (tokenNodes: TokenNode[], getPropertyValue: (v: string) => string): string {
@@ -10,9 +10,6 @@ export function Evaluator (tokenNodes: TokenNode[], getPropertyValue: (v: string
 }
 
 function evaluateNode (node: TokenNode, getPropertyValue: (v: string) => string): string {
-  if (!node) {
-    return ''
-  }
   if (node.type === TokenType.Operator) {
     const parameters = node.innerNodes.map((x) => evaluateNode(x, getPropertyValue))
     return executeOperator(node.value, parameters)
@@ -29,11 +26,4 @@ function evaluateNode (node: TokenNode, getPropertyValue: (v: string) => string)
     return node.innerNodes.reduce((out, childNode) => out + evaluateNode(childNode, getPropertyValue), '')
   }
   return ''
-}
-
-export function getReferencesFromTokens (tokens: Token[]) {
-  return tokens
-    .filter((x) => x.type === TokenType.ReferenceName)
-    .map((x) => x.value)
-    .filter((v, i, a) => a.indexOf(v) === i)
 }

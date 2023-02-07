@@ -1,4 +1,4 @@
-import { executeFunction } from './supportedFunctions'
+import { executeFunction, executeOperator } from './supportedFunctions'
 
 const tests: [string, string[], string][] = []
 
@@ -87,8 +87,25 @@ tests.push(['gt', ['asd', 'sdf'], '0'])
 tests.push(['if', ['0', 'first', 'second'], 'second'])
 tests.push(['if', ['anything except 0 and empty string', 'first', 'second'], 'first'])
 
+tests.push(['multiply', ['invalid', 'first', 'second'], 'NaN'])
+tests.push(['subtract', ['1', 'first'], 'NaN'])
+tests.push(['pow', ['alpha', '2'], 'NaN'])
+tests.push(['max', ['alpha', '2'], 'NaN'])
+tests.push(['if', [], ''])
+tests.push(['invalidFunction', [], ''])
+tests.push(['gt', [], '0'])
+
 describe('supported functions', () => {
   test.each(tests)('evaluate %s function with %s params and get %s', (functionName, params, result) => {
     expect(executeFunction(functionName, params)).toBe(result)
+  })
+})
+
+describe('execute operator', () => {
+  it('should execute multiply operator', () => {
+    expect(executeOperator('*', ['2', '2'])).toBe('4')
+  })
+  it('should execute invalid operator as an empty string', () => {
+    expect(executeOperator('%', ['2', '2'])).toBe('')
   })
 })

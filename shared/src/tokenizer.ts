@@ -41,14 +41,9 @@ export function Tokenizer ({ match, skip, prev }: LexerStream): TokenType {
     }
   }
 
-  const numberRegex = /^[-+]?\d*\.?\d+/
-  if (match(numberRegex, false)) {
-    if (prev && operatorAllowedAfter.includes(prev) && match(/^[-+]/, true)) {
-      return TokenType.Operator
-    } else {
-      match(numberRegex, true)
-      return TokenType.Number
-    }
+  const numberRegex = /^\d*\.?\d+/
+  if (match(numberRegex, true)) {
+    return TokenType.Number
   }
 
   if (prev === TokenType.ReferenceBracketStart) {

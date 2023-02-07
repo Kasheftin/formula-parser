@@ -31,7 +31,8 @@ tests.push(['round(5.5, 2)  - {field}', [
 tests.push(['1+-2ss', [
   { type: TokenType.Number, value: '1' },
   { type: TokenType.Operator, value: '+' },
-  { type: TokenType.Number, value: '-2' },
+  { type: TokenType.Operator, value: '-' },
+  { type: TokenType.Number, value: '2' },
   { type: TokenType.Error, value: 's' },
   { type: TokenType.Error, value: 's' }
 ]])
@@ -62,7 +63,8 @@ tests.push(['({field} - round(5.5)) * 2 + -1', [
   { type: TokenType.Whitespace, value: ' ' },
   { type: TokenType.Operator, value: '+' },
   { type: TokenType.Whitespace, value: ' ' },
-  { type: TokenType.Number, value: '-1' }
+  { type: TokenType.Operator, value: '-' },
+  { type: TokenType.Number, value: '1' }
 ]])
 
 tests.push(['{asd"1s)} + "as({as}a"', [
@@ -146,11 +148,13 @@ tests.push(['if (1<2,3,4)', [
 ]])
 
 tests.push(['-5', [
-  { type: TokenType.Number, value: '-5' }
+  { type: TokenType.Operator, value: '-' },
+  { type: TokenType.Number, value: '5' }
 ]])
 
 tests.push(['+5', [
-  { type: TokenType.Number, value: '+5' }
+  { type: TokenType.Operator, value: '+' },
+  { type: TokenType.Number, value: '5' }
 ]])
 
 tests.push(["uppercase('')", [

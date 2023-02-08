@@ -1,6 +1,5 @@
 import { Token, TokenType } from './types'
-import { Lexer } from './lexer'
-import { Tokenizer } from './tokenizer'
+import { getTokens } from './lexer'
 
 const tests: [string, Token[]][] = []
 
@@ -168,7 +167,7 @@ tests.push(["uppercase('')", [
 
 describe('Lexer(formula, Tokenizer)', () => {
   test.each(tests)('should split %s to tokens correctly and join tokens back to initial formula', (formula, tokens) => {
-    const result = Lexer(formula, Tokenizer)
+    const result = getTokens(formula)
     expect(result).toEqual(tokens)
     expect(result.map(token => token.value).join('')).toBe(formula)
   })

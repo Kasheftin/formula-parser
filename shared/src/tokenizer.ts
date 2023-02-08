@@ -1,6 +1,6 @@
-import { LexerStream, operatorAllowedAfter, TokenType } from './types'
+import { LexerStream, TokenType } from './types'
 
-export function Tokenizer ({ match, skip, prev }: LexerStream): TokenType {
+export function getNextToken ({ match, skip, prev }: LexerStream): TokenType {
   if (prev !== TokenType.QuoteStart && match(/^"/, true)) {
     if (prev === TokenType.String) {
       return TokenType.DoubleQuoteEnd

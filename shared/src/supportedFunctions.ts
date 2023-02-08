@@ -132,7 +132,7 @@ const supportedFunctions = {
   }
 }
 
-export const supportedOperators = {
+const supportedOperators = {
   '&': supportedFunctions.concatenate,
   '+': supportedFunctions.add,
   '-': supportedFunctions.subtract,

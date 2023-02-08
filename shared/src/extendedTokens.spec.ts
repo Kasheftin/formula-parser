@@ -1,4 +1,4 @@
-import { getExtendedTokens } from './index'
+import { getExtendedTokens } from './extendedTokens'
 import { ErrorType, ExtendedFormulaEntry } from './types'
 
 const supportedRefs = ['d']

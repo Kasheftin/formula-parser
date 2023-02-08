@@ -1,8 +1,9 @@
 import { ErrorType, ExtendedFormulaEntry, Token, TokenType } from './types'
-import { getTokens, getTokenNodes, getValidationErrors } from './index'
-import { CircularReferencesValidator, TokenDependenciesDeep } from './validator'
+import { getTokens } from './lexer'
+import { getTokenNodes } from './nodeGenerator'
+import { getValidationErrors, getCircularValidationErrors, getTokenDependenciesDeep } from './validator'
 
-export function ExtendedTokens (formulasByReferences: Record<string, string>, supportedRefs?: string[]) {
+export function getExtendedTokens (formulasByReferences: Record<string, string>, supportedRefs?: string[]) {
   const out: Record<string, ExtendedFormulaEntry> = {}
   const tokensByRefs: Record<string, Token[]> = {}
   Object.entries(formulasByReferences).forEach(([referenceName, formula]) => {
@@ -21,10 +22,10 @@ export function ExtendedTokens (formulasByReferences: Record<string, string>, su
     }
   })
   const allSupportedRefs = [...(supportedRefs || []), ...Object.keys(tokensByRefs)]
-  const dependenciesByRefs = TokenDependenciesDeep(tokensByRefs)
+  const dependenciesByRefs = getTokenDependenciesDeep(tokensByRefs)
   Object.values(out).forEach((entry) => {
     const validationErrors = getValidationErrors(entry.tokens, allSupportedRefs)
-    const circularErrors = CircularReferencesValidator(entry.referenceName, tokensByRefs)
+    const circularErrors = getCircularValidationErrors(entry.referenceName, tokensByRefs)
     entry.validationErrors = [...validationErrors, ...circularErrors]
     entry.dependencies = dependenciesByRefs[entry.referenceName] || []
   })

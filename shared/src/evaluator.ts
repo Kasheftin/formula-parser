@@ -1,7 +1,7 @@
 import { TokenNode, TokenType } from './types'
 import { executeFunction, executeOperator } from './supportedFunctions'
 
-export function Evaluator (tokenNodes: TokenNode[], getPropertyValue: (v: string) => string): string {
+export function evaluateTokenNodes (tokenNodes: TokenNode[], getPropertyValue: (v: string) => string): string {
   let result = ''
   for (const node of tokenNodes) {
     result += evaluateNode(node, getPropertyValue)

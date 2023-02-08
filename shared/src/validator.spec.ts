@@ -1,6 +1,6 @@
 import { ErrorType, Token, TokenType, ValidationError } from './types'
-import { TokenDependenciesDeep, Validator } from './validator'
-import { getCircularValidationErrors, getTokens } from './index'
+import { getTokenDependenciesDeep, getValidationErrors, getCircularValidationErrors } from './validator'
+import { getTokens } from './lexer'
 
 const tests: [string, ErrorType[]][] = []
 tests.push(['1 + 2', []])
@@ -40,14 +40,14 @@ testsWithRefs.push(['sin({x}) + cos({y})', ['x'], [ErrorType.InvalidFunction, Er
 
 describe('Validator(Lexer(formula, Tokenizer))', () => {
   test.each(tests)('should validate %s formula with %s errors', (formula, errors) => {
-    const result = Validator(getTokens(formula)).map(({ errorType }) => errorType)
+    const result = getValidationErrors(getTokens(formula)).map(({ errorType }) => errorType)
     expect(result).toEqual(errors)
   })
 })
 
 describe('Validator(Lexer(formula, Tokenizer), supportedRefs[])', () => {
   test.each(testsWithRefs)('should validate %s formula with %s errors', (formula, supportedRefs, errors) => {
-    const result = Validator(getTokens(formula), supportedRefs).map(({ errorType }) => errorType)
+    const result = getValidationErrors(getTokens(formula), supportedRefs).map(({ errorType }) => errorType)
     expect(result).toEqual(errors)
   })
 })
@@ -68,7 +68,7 @@ describe('TokenDependenciesDeep', () => {
       out[referenceName] = getTokens(formula)
       return out
     }, {})
-    expect(TokenDependenciesDeep(tokensByReferences)).toEqual(result)
+    expect(getTokenDependenciesDeep(tokensByReferences)).toEqual(result)
   })
 })
 

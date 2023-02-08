@@ -1,7 +1,7 @@
 import { Token, TokenType } from './types'
 
 // https://en.wikipedia.org/wiki/Operator-precedence_parser fortran approach
-export function OperatorPrecedence (tokens: Token[]) {
+export function applyOperatorPrecedence (tokens: Token[]) {
   const newTokens: Token[] = []
 
   const operatorGroups = ['^', '*/', '+-', '<=>='].filter(entry => tokens.some(token => token.type === TokenType.Operator && entry.includes(token.value)))
@@ -27,7 +27,7 @@ export function OperatorPrecedence (tokens: Token[]) {
 }
 
 // Fix the formula like "-sin(1)" - add 0 at the begining
-export function FixOperatorsAtTheBegining (tokens: Token[]) {
+export function fixOperatorsAtTheBegining (tokens: Token[]) {
   const newTokens: Token[] = []
   let prevToken: Token | null = null
   for (let i = 0; i < tokens.length; i++) {

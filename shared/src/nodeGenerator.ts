@@ -1,8 +1,18 @@
+import { getTokens } from './lexer'
+import { applyOperatorPrecedence, fixOperatorsAtTheBegining } from './operatorPrecedence'
 import { Token, TokenNode, TokenType } from './types'
+
+export function getTokenNodes (formula: string, skipOperatorPrecedence = false) {
+  if (skipOperatorPrecedence) {
+    return buildTokenNodeTree(fixOperatorsAtTheBegining(getTokens(formula)))
+  } else {
+    return buildTokenNodeTree(applyOperatorPrecedence(fixOperatorsAtTheBegining(getTokens(formula))))
+  }
+}
 
 const meaningfulTypes = [TokenType.String, TokenType.Number, TokenType.ReferenceName, TokenType.Operator, TokenType.FunctionName, TokenType.BracketStart, TokenType.BracketEnd]
 
-export function NodeGenerator (tokens: Token[], level = 0) {
+export function buildTokenNodeTree (tokens: Token[], level = 0) {
   const nodes: TokenNode[] = []
   const filteredTokens = level ? tokens : tokens.filter(token => meaningfulTypes.includes(token.type))
   for (let i = 0; i < filteredTokens.length; i++) {
@@ -26,7 +36,7 @@ export function NodeGenerator (tokens: Token[], level = 0) {
       addNode(nodes, {
         type: token.type,
         value: token.value,
-        innerNodes: NodeGenerator(filteredTokens.slice(i + 1 + offset, nextI - offset), level + 1)
+        innerNodes: buildTokenNodeTree(filteredTokens.slice(i + 1 + offset, nextI - offset), level + 1)
       })
       i = nextI - offset
     } else if (token.type === TokenType.BracketStart) {
@@ -34,7 +44,7 @@ export function NodeGenerator (tokens: Token[], level = 0) {
       addNode(nodes, {
         type: TokenType.Group,
         value: '',
-        innerNodes: NodeGenerator(filteredTokens.slice(i + 1, nextI), level + 1)
+        innerNodes: buildTokenNodeTree(filteredTokens.slice(i + 1, nextI), level + 1)
       })
       i = nextI - 1
     }

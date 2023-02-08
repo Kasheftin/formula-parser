@@ -27,7 +27,7 @@ const unclosedErrorMap: Partial<Record<TokenType, ErrorType>> = {
   [TokenType.ReferenceName]: ErrorType.UnclosedReferenceBracket
 }
 
-export function Validator (tokens: Token[], supportedRefs?: string[]) {
+export function getValidationErrors (tokens: Token[], supportedRefs?: string[]) {
   const errors: ValidationError[] = []
   const unclosedTokens: { token: Token; tokenIndex: number; type: TokenType }[] = []
   const supportedRefsLowerCase = supportedRefs?.map(ref => ref.toLowerCase())
@@ -138,7 +138,7 @@ export function Validator (tokens: Token[], supportedRefs?: string[]) {
   return errors
 }
 
-export function TokenDependenciesDeep (tokensByReferences: Record<string, Token[]>) {
+export function getTokenDependenciesDeep (tokensByReferences: Record<string, Token[]>) {
   const dependencyMap: Record<string, string[]> = {}
   const definedReferences: Record<string, boolean> = {}
   Object.entries(tokensByReferences).forEach(([referenceName, tokens]) => {
@@ -177,11 +177,11 @@ export function TokenDependenciesDeep (tokensByReferences: Record<string, Token[
   }, {})
 }
 
-export function CircularReferencesValidator (referenceName: string, tokensByReferences: Record<string, Token[]>) {
+export function getCircularValidationErrors (referenceName: string, tokensByReferences: Record<string, Token[]>) {
   const tokens = tokensByReferences[referenceName] || []
   referenceName = referenceName.toLowerCase()
   const errors: ValidationError[] = []
-  const dependenciesByReferences = TokenDependenciesDeep(tokensByReferences)
+  const dependenciesByReferences = getTokenDependenciesDeep(tokensByReferences)
   for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
     const token = tokens[tokenIndex]
     if (token.type === TokenType.ReferenceName) {

@@ -1,7 +1,11 @@
-import { Tokenizer } from './tokenizer'
+import { getNextToken } from './tokenizer'
 import { Token, TokenType } from './types'
 
-export function Lexer (formula: string, tokenizer: typeof Tokenizer) {
+export function getTokens (formula: string) {
+  return processTokenStream(formula)
+}
+
+function processTokenStream (formula: string) {
   const tokens: Token[] = []
   let position = 0
   const skip = (amount = 1) => {
@@ -21,7 +25,7 @@ export function Lexer (formula: string, tokenizer: typeof Tokenizer) {
   let prev: TokenType | null = null
   while (position < formula.length) {
     const startingPosition = position
-    let tokenType = tokenizer({ match, skip, prev })
+    let tokenType = getNextToken({ match, skip, prev })
     if (startingPosition === position) {
       throw new Error('Tokenizer did not move forward')
     }

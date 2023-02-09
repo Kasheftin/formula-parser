@@ -22,8 +22,7 @@
               <th class="fm-table__col fm-table__col--header">
                 formula
               </th>
-              <th class="fm-table__col fm-table__col--header" width="50">
-              </th>
+              <th class="fm-table__col fm-table__col--header" width="50px" />
             </tr>
           </thead>
           <tbody>
@@ -48,7 +47,7 @@
         </table>
       </div>
       <div class="fm-block__actions">
-        <button class="fm-btn" @click="addFormula">
+        <button class="fm-btn" @click="addField">
           Add Formula
         </button>
       </div>
@@ -64,7 +63,7 @@
               <th
                 v-for="column in columns" 
                 :key="column.key" 
-                :class="`fm-table__col fm-table__col--header`"
+                class="fm-table__col fm-table__col--header"
               >
                 {{ column.title }}
               </th>
@@ -94,11 +93,19 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { evaluateTokenNodes, getExtendedTokens, type ExtendedFormulaEntry } from '../../shared/src'
-import { generateItems, generateFormulaFields, supportedColumns, supportedRefs } from '../../shared-demo/gen'
+import { evaluateTokenNodes, getExtendedTokens, type ExtendedFormulaEntry } from '@/shared/src'
+import { generateItems, generateFormulaFields, supportedColumns, supportedRefs } from '@/shared-demo/gen'
 import FormulaInput from './FormulaInput.vue'
 
 const fields = ref(generateFormulaFields())
+
+const addField = () => {
+  fields.value.push({
+    id: crypto.randomUUID(),
+    referenceName: '',
+    formula: ''
+  })
+}
 
 const formulasByRefs = computed(() => fields.value.reduce((out: Record<string, string>, field) => {
   if (field.referenceName) {
@@ -116,20 +123,10 @@ const extendedTokensByRefs = computed(() => Object.values(extendedTokens.value).
 
 const extendedTokensOrdered = computed(() => Object.values(extendedTokens.value).sort((a, b) => a.order - b.order))
 
-const addFormula = () => {
-  fields.value.push({
-    id: crypto.randomUUID(),
-    referenceName: '',
-    formula: ''
-  })
-}
-
-const columns = computed(() => {
-  return [
-    ...supportedColumns, 
-    ...fields.value.map(field => ({ key: field.referenceName, title: field.referenceName, type: 'formula' }))
-  ]
-})
+const columns = computed(() => [
+  ...supportedColumns, 
+  ...fields.value.map(field => ({ key: field.referenceName, title: field.referenceName, type: 'formula' }))
+])
 
 const items = ref(generateItems())
 const extendedItems = computed(() => items.value.map((item) => {

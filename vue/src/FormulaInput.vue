@@ -36,11 +36,11 @@
 
 <script setup lang="ts">
 import { defineProps, defineEmits, ref, computed, watch, onBeforeUnmount } from 'vue'
-import type { Token, ValidationError } from '../../shared/src'
+import type { Token, ValidationError } from '@/shared/src'
 
 type Props = {
-  modelValue: string,
-  tokens?: Token[],
+  modelValue: string
+  tokens?: Token[]
   validationErrors?: ValidationError[]
 }
 

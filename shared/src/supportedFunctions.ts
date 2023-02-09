@@ -167,7 +167,7 @@ export function functionIsSupported (name: string) {
 }
 
 export function toNumberString (n: number) {
-  return Number(n.toFixed(12)).toString()
+  return Number(n.toFixed(10)).toString()
 }
 
 function paramAsBooleanIsSet (param?: string | undefined) {

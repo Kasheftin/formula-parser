@@ -6,13 +6,14 @@ import { getValidationErrors, getCircularValidationErrors, getTokenDependenciesD
 export function getExtendedTokens (formulasByReferences: Record<string, string>, supportedRefs?: string[]) {
   const out: Record<string, ExtendedFormulaEntry> = {}
   const tokensByRefs: Record<string, Token[]> = {}
-  Object.entries(formulasByReferences).forEach(([referenceName, formula]) => {
-    referenceName = referenceName.toLowerCase()
+  Object.entries(formulasByReferences).forEach(([referenceNameOrig, formula]) => {
+    const referenceName = referenceNameOrig.toLowerCase()
     const tokens = getTokens(formula)
     const tokenNodes = getTokenNodes(formula)
     tokensByRefs[referenceName] = tokens
     out[referenceName] = {
       referenceName,
+      referenceNameOrig,
       formula,
       tokens,
       tokenNodes,

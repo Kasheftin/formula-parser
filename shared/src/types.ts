@@ -77,6 +77,7 @@ export type ValidationError = {
 
 export type ExtendedFormulaEntry = {
   referenceName: string
+  referenceNameOrig: string
   formula: string
   tokens: Token[]
   tokenNodes: TokenNode[]

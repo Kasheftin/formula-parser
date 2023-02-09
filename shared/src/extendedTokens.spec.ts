@@ -7,7 +7,7 @@ const tests: [Record<string, string>, Record<string, Partial<ExtendedFormulaEntr
 
 tests.push([{
   a: '{b} + {c}',
-  b: '1',
+  B: '1',
   c: '{d}'
 }, {
   a: { order: 2, dependencies: ['b', 'c'] },

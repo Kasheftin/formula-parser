@@ -1,5 +1,5 @@
 import { getNextToken } from './tokenizer'
-import { Token, TokenType } from './types'
+import { type Token, TokenType } from './types'
 
 export function getTokens (formula: string) {
   return processTokenStream(formula)

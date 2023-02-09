@@ -1,4 +1,4 @@
-import { TokenNode, TokenType } from './types'
+import { type TokenNode, TokenType } from './types'
 import { executeFunction, executeOperator } from './supportedFunctions'
 
 export function evaluateTokenNodes (tokenNodes: TokenNode[], getPropertyValue: (v: string) => string): string {

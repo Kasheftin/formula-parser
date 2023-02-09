@@ -1,4 +1,4 @@
-import { ErrorType, ExtendedFormulaEntry, Token, TokenType } from './types'
+import { ErrorType, type ExtendedFormulaEntry, type Token, TokenType } from './types'
 import { getTokens } from './lexer'
 import { getTokenNodes } from './nodeGenerator'
 import { getValidationErrors, getCircularValidationErrors, getTokenDependenciesDeep } from './validator'

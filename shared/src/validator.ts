@@ -1,5 +1,5 @@
 import { functionIsSupported } from './supportedFunctions'
-import { operatorAllowedAfter, Token, TokenType, ErrorType, ValidationError } from './types'
+import { operatorAllowedAfter, type Token, TokenType, ErrorType, type ValidationError } from './types'
 
 const operatorRequiredMap: Partial<Record<TokenType, ErrorType>> = {
   [TokenType.Number]: ErrorType.OperatorRequiredBeforeNumber,

@@ -280,8 +280,12 @@ We are going to implement a very simple input highlight. It will not involve any
 }
 ````
 
-The limitation of this approach is that the color is the only property we can modify. We can not make part of an input bold or in different size, because underlying textarea does not support this. Since we use cursor & highlight of the textarea, every overlaying colored character must perfectly match the underlying corresponding textarea character. 
+The limitation of this approach is that the color is the only property we can modify. We can not make part of an input bold or use different size, because underlying textarea does not support this. Since we use cursor & highlight of the textarea, every overlaying colored character must perfectly match the underlying corresponding textarea character. 
 
 The coloring process itself is trivial because we already have the tokenized input. We just concat the tokens back using spans and apply different styles like blue for functions, red for errors, etc. 
 
 ![Validation & Highlight Demo](images/pic2.gif)
+
+## Usage Demos, Links and Source Code
+
+Two demos was prepared as a usage examples for the formula parser. Both are trivial (just 2 files), have identical logic, one is wirtten in Vue.js, another one uses React.

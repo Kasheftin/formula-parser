@@ -1,4 +1,4 @@
-import { Token, TokenType } from './types'
+import { type Token, TokenType } from './types'
 
 // https://en.wikipedia.org/wiki/Operator-precedence_parser fortran approach
 export function applyOperatorPrecedence (tokens: Token[]) {

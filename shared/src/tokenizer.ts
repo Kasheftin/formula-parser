@@ -1,4 +1,4 @@
-import { LexerStream, TokenType } from './types'
+import { type LexerStream, TokenType } from './types'
 
 export function getNextToken ({ match, skip, prev }: LexerStream): TokenType {
   if (prev !== TokenType.QuoteStart && match(/^"/, true)) {

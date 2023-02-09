@@ -1,6 +1,7 @@
 {
   "extends": "@vue/tsconfig/tsconfig.web.json",
   "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "exclude": ["**/*.spec.ts"],
   "compilerOptions": {
     "baseUrl": ".",
     "lib": ["es2017", "dom"],

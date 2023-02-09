@@ -21,5 +21,6 @@ export default defineConfig({
     viteTsConfigPaths({
       root: './',
     })
-  ]
+  ],
+  base: './'
 })

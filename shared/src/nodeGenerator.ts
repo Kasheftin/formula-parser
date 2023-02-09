@@ -1,6 +1,6 @@
 import { getTokens } from './lexer'
 import { applyOperatorPrecedence, fixOperatorsAtTheBegining } from './operatorPrecedence'
-import { Token, TokenNode, TokenType } from './types'
+import { type Token, type TokenNode, TokenType } from './types'
 
 export function getTokenNodes (formula: string, skipOperatorPrecedence = false) {
   if (skipOperatorPrecedence) {

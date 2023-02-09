@@ -14,8 +14,8 @@ We are going to implement formula parser which supports mathematical operators, 
 
 ### Links & Demo
 - https://github.com/Kasheftin/formula-parser - Source code
-- https://kasheftin.github.io/formula-parser/vue/ - Vue3 Demo
-- https://kasheftin.github.io/formula-parser/react/ - React Demo
+- https://kasheftin.github.io/formula-parser/vue/index.html - Vue3 Demo
+- https://kasheftin.github.io/formula-parser/react/index.html - React Demo
 
 ## Tokenization
 Formula parser consists on serveral parts. Lexer and Tokenizer are used together for the initial split. Lexer is a general iterator which processes the string from start to end. It works with any syntax. Tokenizer is a bunch of regular expressions for our specific syntax, it should find the match and move the pointer. The result is an array of tokens. Every token is just `{type: string, value: string}`. For the formula like `1+2` it is
@@ -30,7 +30,15 @@ It does not filter out any characters from the input meaning if we join back tok
 
 Every character should be colored. We introduce quite a lot of types to simplify the future work. Tokenization is straight forward process running in one cycle without recursion. On every step it iterates over the regular expressions (order is important), the first match cuts out the matching part and repeats from the start. Since we don't use recursion, it's hard to tell if `)` is just a bracket or it belongs to a function. That's why we do not introduce different types of brackets.
 
-Here's [Lexer](https://github.com/Kasheftin/formula-parser/shared/src/lexer.ts) and [Tokenizer](https://github.com/Kasheftin/formula-parser/shared/src/tokenizer.ts) source code covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/lexer.spec.ts).
+We use a couple of tricky regular expression like `/^([^"\\]|\\.)+(?=")/`. This is what it does:
+
+- it runs when inside a double quote (after the first `"`)
+- it includes every character except the next `"` not including it ,`(?=")` does the trick
+- but if it finds `\"` (escaped double quote) then it skips it until the next `"` 
+- as the result, a string like `{a} & "Hello,\"John\""` correctly parses `Hello,"John"` as a string
+
+
+Here's [Lexer](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/lexer.ts) and [Tokenizer](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/tokenizer.ts) source code covered with [tests](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/lexer.spec.ts).
 
 ## Node Generator
 
@@ -62,26 +70,26 @@ The process looks familiar to ones who remember RPN (reverse polish notation) an
 - If it's operator, remember the previous token, replace it with current token and then push remembered token as it's child.
 - If it's a function or bracket start, cut all the tokens until the corresponding closing bracket (iterate over the brackets, every `(` adds 1, every `)` subtracts 1, until 0) and consider them as children tokens, push the current token and assign it's inner tokens as recursive call, applied to children tokens. 
 
-Here's the full [source code](https://github.com/Kasheftin/formula-parser/shared/src/nodeGenerator.ts) of the described process covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/nodeGenerator.spec.ts).
+Here's the full [source code](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/nodeGenerator.ts) of the described process covered with [tests](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/nodeGenerator.spec.ts).
 
 ## Operators at the begining issue
 
-There's a small issue for formulas like `max(-round(5.5), -round(6.5))`. Minuses kind of hanging in the air, their operation nodes has only one child while subtract operation requires 2 arguments. It can be solved in several ways. We just prepend every hanging `±` operator with zero. We count `±` as hanging if there're no previous tokens or if the previous token is opening bracket or comma.
+There's a small issue for formulas like `max(-round(5.5), -round(6.5))`. Since we consider only the binary operations, minuses kind of hanging in the air, their operation nodes has only one child while subtract operation requires 2 arguments. It can be solved in several ways. We just prepend every hanging `±` operator with zero. We count `±` as hanging if there're no previous tokens or if the previous token is opening bracket or comma.
 
 ## Operator precedence
 
-For such a simple tree generator process as described it's clear that operator precedence is not yet in place. That means `1+2*3` will be evaluated from left to right, summing will go first, the multiplication will go second, and the result will be `9` instead of `7`. To fix it we use fortran approach from [Wikipedia](https://en.wikipedia.org/wiki/Operator-precedence_parser):
-- 1 bracket: prepend `^` (power operator) with `)` and append with `(`, `^` converts to `)^(`
-- 2 brackets: prepend `*` and `/` with `))` and append with `((`
-- 3 brackets: prepend `+` and `-` with `)))` and append with `(((`
-- 4 brackets: prepend comparison operator with `))))` and append with `((((`
-- 5 brackets: prepend comma with `)))))` and append with `(((((`
+For such a simple tree generator process as described it's clear that operator precedence is not yet in place. That means `1+2*3` will be evaluated from left to right, summing will go first, the multiplication will go second, and the result will be `9` instead of `7`. To fix it we use fortran approach from [Wikipedia](https://en.wikipedia.org/wiki/Operator-precedence_parser), going down from upper priority to lower priority:
+- 1 bracket: prepend every `^` (power operator) with `)` and append with `(`, `^` converts to `)^(`
+- 2 brackets: prepend every `*` and `/` with `))` and append with `((`
+- 3 brackets: prepend every `+` and `-` with `)))` and append with `(((`
+- 4 brackets: prepend every comparison operator with `))))` and append with `((((`
+- 5 brackets: prepend every comma with `)))))` and append with `(((((`
 - 6 brackets: replace every initially existing bracket with 6 brackets of the same type
 - 6 brackets: wrap the entire equation in 6 additional brackets
 
 The idea is to prepend and append every operator with some amount of additional brackets. The bracket count should grow while going from bigger precedence to smaller one. The amount of brackets becomes quite big and hard to read, but, obviously, if the formula does not include some type of operators, we can skip it from the list and decrease the number of added brackets. Hence the formula `1+2*3` is transformed into `((1) + (2*3))`.
 
-Here's the full [source code](https://github.com/Kasheftin/formula-parser/shared/src/operatorPrecedence.ts) of the described process covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/operatorPrecedence.spec.ts).
+Here's the full [source code](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/operatorPrecedence.ts) of the described process covered with [tests](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/operatorPrecedence.spec.ts).
 
 ## Evaluation
 
@@ -106,9 +114,9 @@ const getItemProperty = (propertyName: string) => (item[propertyName] || '').toS
 const result = evaluateTokenNodes(tokenNodes, getItemProperty) // returns floor(8 - 3 * 2.2) = 1
 ````
 
-The full list of supported functions is specified in [supportedFunctions.ts](https://github.com/Kasheftin/formula-parser/shared/src/supportedFunctions.ts). It can be easily expanded. For the demo purpose there's an implementation of such functions as `round`, `ceil`, `floor`, `max`, `min`, `lte`, `gte` etc. Strings both in single and double quotes are also supported, but for concatination we use `&` instead of `+`. Basically, we consider every formula variable as a number, hence `"1"+"2"="3"`, `"1"+"a"="NaN"`, and `"1"&"2"="12"`. 
+The full list of supported functions is specified in [supportedFunctions.ts](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/supportedFunctions.ts). It can be easily expanded. For the demo purpose there's an implementation of such functions as `round`, `ceil`, `floor`, `max`, `min`, `lte`, `gte` etc. Strings both in single and double quotes are also supported, but for concatination we use `&` instead of `+`. Basically, we consider every formula variable as a number, hence `"1"+"2"="3"`, `"1"+"a"="NaN"`, and `"1"&"2"="12"`. 
 
-Many usage examples might be found in [evaluations tests](https://github.com/Kasheftin/formula-parser/shared/src/index.spec.ts).
+Many usage examples might be found in [evaluations tests](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/index.spec.ts).
 
 ## Syntax validation
 
@@ -137,7 +145,7 @@ if (token.type === 'Operator' && !'+-'.includes(token.value)) {
 }
 ````
 
-The full validator code is [here](https://github.com/Kasheftin/formula-parser/shared/src/validator.ts). It's covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/validator.spec.ts).
+The full validator code is [here](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/validator.ts). It's covered with [tests](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/validator.spec.ts).
 
 ## Circular references validation
 
@@ -165,14 +173,20 @@ getFormulaDependenciesDeep('b')
 // returns [a, c, b], formula depends on itself, it's an error
 
 getFormulaDependenciesDeep('d')
-// returns [b, a, c, a], despite {d} depends on {b} which has cicular reference, {d} formula is valid
+// returns [b, a, c], despite {d} depends on {b} which has cicular reference, {d} formula is valid
 ````
 
-We just iterate over the formulas and recursively collect every formula dependencies. If dependencies list includes the initial formula name, it throws a circular error. The same time, a formula `{a}` may depend on on formula `{b}` which has a circular reference inside like `{b}->{c}->{d}->{b}`. This case formula `{b}` throws a circular error while `{a}` is counted as valid. However `{a}` is not going to be evaluated because on the next step we are going to propogate all the errors up to dependant formulas. Since `{a}` depends on `{b}` which has circular error, `{a}` gets `depends-on-invalid` error.
+We just iterate over the formulas and recursively collect every formula dependencies. If the list of dependencies includes the initial formula name, a circular error should be thrown. At the same time, a formula `{a}` may depend on on formula `{b}`, and there might be a a circular reference, which does not incude `{a}` (for example, it might be `{b}->{c}->{d}->{b}`). This case the formula `{b}` throws a circular error while `{a}` is counted as valid. However `{a}` is not going to be evaluated because on the next step we are going to propogate all the errors up to dependant formulas. Since `{a}` depends on `{b}` which has circular error, `{a}` gets `depends-on-invalid` error.
 
 ## Wrapping things up
 
 The last step is to consider all the defined formulas alltogether. We have to prepare all the tokens and token trees, then order formulas and validate everything. Ordering is required because we need to evaluate dependant formulas after their dependencies. Also, if a formula depends on another formula which has validation errors, it should be marked as `depends-on-invalid`, and it's evaluation should be skipped.   
+
+We can not prepare everything in one go, that's why we iterate over the formulas several times:
+- First run: prepare tokens, get the list of all available references
+- Second run: prepare validation errors (using available references from the previos step), circular errors and formula dependencies
+- Third run: substitute evaluation order for every formula using formula dependencies from the previous step
+- Propogate errors up to dependant formulas, iterate formulas by the order.  
 
 ````TypeScript
 type ExtendedFormulaEntry = {
@@ -249,11 +263,11 @@ function getExtendedTokens (formulasByRefs, supportedRefs): Record<string, Exten
 }
 ````
 
-Here's the full [extended token generator code](https://github.com/Kasheftin/formula-parser/shared/src/extendedTokens.ts) covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/extendedTokens.spec.ts).
+Here's the full [extended token generator code](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/extendedTokens.ts) covered with [tests](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/extendedTokens.spec.ts).
 
 ## Basic input highlight
 
-We are going to implement a very simple input highlight. It will not involve anything like contenteditable or external editors. We just cover the textarea with an absolutely positioned div and add colored content there. Then make the textarea input itself transparent, but not the cursor or selection. The main difficulty is to align texterea input and hovered content. The font and all the sizes should match, as well as word wrap behavior. The following rules must be applied to the covering div to reproduce the textarea behavior:
+We are going to implement a very simple input highlight. It will not involve anything like contenteditable or external editors. We just cover the textarea with an absolutely positioned div and add colored content there. Then make the textarea input transparent, but not the cursor or selection. The main difficulty is to align texterea input and hovered content. The font and all the sizes should match, as well as word wrap behavior. The following rules must be applied to the covering div to reproduce the textarea behavior:
 ````css
 .input-textarea, .input-highlight-cover {
   padding: 4px;
@@ -282,10 +296,14 @@ We are going to implement a very simple input highlight. It will not involve any
 
 The limitation of this approach is that the color is the only property we can modify. We can not make part of an input bold or use different size, because underlying textarea does not support this. Since we use cursor & highlight of the textarea, every overlaying colored character must perfectly match the underlying corresponding textarea character. 
 
-The coloring process itself is trivial because we already have the tokenized input. We just concat the tokens back using spans and apply different styles like blue for functions, red for errors, etc. 
+The coloring process itself is trivial because we already have the tokenized input. We just concat the tokens back using spans and apply different styles, use purple for functions, red for errors, etc. 
 
 ![Validation & Highlight Demo](images/pic2.gif)
 
 ## Usage Demos, Links and Source Code
 
-Two demos was prepared as a usage examples for the formula parser. Both are trivial (just 2 files), have identical logic, one is wirtten in Vue.js, another one uses React.
+Two demos was prepared as a usage examples for the formula parser. Both are trivial (just 2 files for each), both have identical logic, one is written in Vue.js, another one uses React.
+
+- https://github.com/Kasheftin/formula-parser - Source code
+- https://kasheftin.github.io/formula-parser/vue/index.html - Vue3 Demo
+- https://kasheftin.github.io/formula-parser/react/index.html - React Demo

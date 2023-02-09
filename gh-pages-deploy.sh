@@ -19,7 +19,7 @@ mkdir dist
 mv vue/dist dist
 mv dist/dist dist/vue
 mv react/dist/react-vite dist
-mv react-vite react
+mv dist/react-vite dist/react
 rmdir react/dist
 
 git checkout --orphan gh-pages

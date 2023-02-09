@@ -21,7 +21,7 @@
 }
 
 .fm-btn {
-  @apply rounded bg-pink-500 py-2 px-3 text-white hover:bg-pink-700;
+  @apply rounded bg-pink-500 py-1 px-3 text-white hover:bg-pink-700;
 }
 
 .fm-table {
@@ -38,23 +38,25 @@
 }
 
 .fm-input {
-  @apply w-full rounded-sm p-2;
-}
-
-.fm-textarea {
-  @apply w-full rounded-sm p-2;
+  @apply w-full p-1 outline-none rounded border border-slate-400 bg-white;
+  &:focus {
+    @apply border-slate-800;
+  }
 }
 
 .fm-validation {
   @apply text-pink-600;
 }
 
-.fm-input {
+.fm-colored-input {
   &__wrapper {
-    @apply relative flex;
+    @apply relative flex rounded border border-slate-400 bg-white;
+    &--focused {
+      @apply border-slate-800;
+    }
   }
   &__textarea {
-    @apply w-full resize-none text-transparent border-0 p-1 font-mono outline-none;
+    @apply w-full resize-none text-transparent bg-transparent border-0 p-1 font-mono outline-none;
     caret-color: #000;
     &::selection {
       @apply text-transparent bg-slate-300;

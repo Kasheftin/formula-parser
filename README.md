@@ -251,4 +251,37 @@ function getExtendedTokens (formulasByRefs, supportedRefs): Record<string, Exten
 
 Here's the full [extended token generator code](https://github.com/Kasheftin/formula-parser/shared/src/extendedTokens.ts) covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/extendedTokens.spec.ts).
 
+## Basic input highlight
+
+We are going to implement a very simple input highlight. It will not involve anything like contenteditable or external editors. We just cover the textarea with an absolutely positioned div and add colored content there. Then make the textarea input itself transparent, but not the cursor or selection. The main difficulty is to align texterea input and hovered content. The font and all the sizes should match, as well as word wrap behavior. The following rules must be applied to the covering div to reproduce the textarea behavior:
+````css
+.input-textarea, .input-highlight-cover {
+  padding: 4px;
+  font-family: monospace;
+  font-size: 16px/24px;
+}
+.input-textarea {
+  resize: none;
+  color: transparent;
+  caret-color: #000;
+  border: 0;
+  outline: none;
+}
+.input-highlight-cover {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  pointer-events: none;
+  overflow: hidden;
+}
+````
+
+The limitation of this approach is that the color is the only property we can modify. We can not make part of an input bold or in different size, because underlying textarea does not support this. Since we use cursor & highlight of the textarea, every overlaying colored character must perfectly match the underlying corresponding textarea character. 
+
+The coloring process itself is trivial because we already have the tokenized input. We just concat the tokens back using spans and apply different styles like blue for functions, red for errors, etc. 
+
 ![Validation & Highlight Demo](images/pic2.gif)

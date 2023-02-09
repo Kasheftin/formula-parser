@@ -1,15 +1,15 @@
 <template>
-  <div class="fm-input">
+  <div class="fm-colored-input">
     <div
       :class="{
-        'fm-input__wrapper--focused': isFocused
+        'fm-colored-input__wrapper--focused': isFocused
       }"
-      class="fm-input__wrapper"
+      class="fm-colored-input__wrapper"
     >
       <textarea
         ref="textareaRef"
         v-model="modelValue"
-        class="fm-input__textarea"
+        class="fm-colored-input__textarea"
         autocomplete="off"
         autocorrect="off"
         autocapitalize="off"
@@ -18,7 +18,7 @@
         @focus="isFocused = true"
         @blur="isFocused = false"
       />
-      <div class="fm-input__highlight">
+      <div class="fm-colored-input__highlight">
         <span
           v-for="(highlightEntry, highlightEntryIndex) in highlight"
           :key="highlightEntry.value + highlightEntryIndex"
@@ -28,14 +28,14 @@
         </span>
       </div>
     </div>
-    <div class="fm-input__validation">
+    <div class="fm-colored-input__validation">
       {{ props.validationErrors?.map(error => error.errorType).join(', ') }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, ref, computed, watch, onMounted } from 'vue'
+import { defineProps, defineEmits, ref, computed, watch, onBeforeUnmount } from 'vue'
 import type { Token, ValidationError } from '../../shared/src'
 
 type Props = {
@@ -71,7 +71,7 @@ const highlight = computed(() => {
   }, {})
   return props.tokens?.map((token, tokenIndex) => ({
     value: token.value,
-    css: `fm-input__highlight--${token.type}` + (errorsByTokenIndexes?.[tokenIndex] ? ' fm-input__highlight--error' : '')
+    css: `fm-colored-input__highlight--${token.type}` + (errorsByTokenIndexes?.[tokenIndex] ? ' fm-colored-input__highlight--error' : '')
   }))
 })
 
@@ -84,6 +84,16 @@ watch(modelValue, (value) => {
   updateHeight()
 }, { immediate: true })
 
-onMounted(updateHeight)
+const resizeObserver = new ResizeObserver(() => {
+  updateHeight()
+})
+
+watch(textareaRef, (value) => {
+  value && resizeObserver.observe(value)
+})
+
+onBeforeUnmount(() => {
+  resizeObserver.disconnect()
+})
 
 </script>

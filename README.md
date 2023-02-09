@@ -1,4 +1,4 @@
-# Formula parser in JavaScript/Vue/React
+# Formula Parser in JavaScript/Vue/React
 
 This work is the continuation/rethink of [this great article](https://andrewstevens.dev/posts/formula-parser-in-javascript/) written by Andrew Stevens. It's based on the source code of [CodeMirror](https://codemirror.net/) and [Marked.JS](https://marked.js.org/). 
 
@@ -210,7 +210,7 @@ function getExtendedTokens (formulasByRefs, supportedRefs): Record<string, Exten
     }
   })
 
-  // Validation errors and deep dependencies
+  // Validation errors, circular errors, and deep dependencies
   const allSupportedRefs = [...(supportedRefs || []), ...Object.keys(tokensByRefs)]
   const dependenciesByRefs = getFormulasDependenciesDeep(tokensByRefs)
   Object.values(out).forEach((entry) => {
@@ -220,7 +220,7 @@ function getExtendedTokens (formulasByRefs, supportedRefs): Record<string, Exten
     entry.dependencies = dependenciesByRefs[entry.referenceName] || []
   })
 
-  // Ordering
+  // Evaluation order
   const resolved: Record<string, boolean> = {}
   let order = 1
   let updated = true

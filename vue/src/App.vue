@@ -32,10 +32,11 @@
                 <input v-model="field.referenceName" type="text" class="fm-input" />
               </td>
               <td class="fm-table__col fm-table__col--input">
-                <textarea v-model="field.formula" type="text" rows="1" class="fm-textarea" />
-                <div class="fm-validation">
-                  {{ extendedTokensByRefs[field.referenceName]?.validationErrors.map(error => error.errorType).join(', ') }}
-                </div>
+                <FormulaInput
+                  v-model="field.formula"
+                  :tokens="extendedTokensByRefs[field.referenceName]?.tokens"
+                  :validation-errors="extendedTokensByRefs[field.referenceName]?.validationErrors"
+                />
               </td>
               <td class="fm-table__col">
                 <button class="fm-btn" @click="fields.splice(fieldIndex, 1)">
@@ -95,6 +96,7 @@
 import { ref, computed } from 'vue'
 import { evaluateTokenNodes, getExtendedTokens, type ExtendedFormulaEntry } from '../../shared/src'
 import { generateItems, generateFormulaFields, supportedColumns, supportedRefs } from '../../shared-demo/gen'
+import FormulaInput from './FormulaInput.vue'
 
 const fields = ref(generateFormulaFields())
 

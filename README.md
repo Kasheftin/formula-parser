@@ -250,3 +250,5 @@ function getExtendedTokens (formulasByRefs, supportedRefs): Record<string, Exten
 ````
 
 Here's the full [extended token generator code](https://github.com/Kasheftin/formula-parser/shared/src/extendedTokens.ts) covered with [tests](https://github.com/Kasheftin/formula-parser/shared/src/extendedTokens.spec.ts).
+
+![Validation & Highlight Demo](images/pic2.gif)

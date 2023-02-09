@@ -27,7 +27,7 @@
 .fm-table {
   @apply w-full table-auto;
   &__col {
-    @apply border border-gray-300 p-3 text-right align-top;
+    @apply border border-slate-300 p-3 text-right align-top;
     &--header {
       @apply font-bold text-pink-600 text-center;
     }
@@ -46,5 +46,42 @@
 }
 
 .fm-validation {
-  @apply text-sm text-pink-600 min-h-[20px];
+  @apply text-pink-600;
+}
+
+.fm-input {
+  &__wrapper {
+    @apply relative flex;
+  }
+  &__textarea {
+    @apply w-full resize-none text-transparent border-0 p-1 font-mono outline-none;
+    caret-color: #000;
+    &::selection {
+      @apply text-transparent bg-slate-300;
+    }
+  }
+  &__highlight {
+    @apply absolute top-0 right-0 bottom-0 left-0 p-1 font-mono whitespace-pre-wrap break-words pointer-events-none overflow-hidden;
+    &--String, &--QuoteStart, &--QuoteEnd, &--DoubleQuoteStart, &--DoubleQuoteEnd {
+      @apply text-amber-600;
+    }
+    &--Number {
+      @apply text-green-600;
+    }
+    &--ReferenceName, &--ReferenceBracketStart, &--ReferenceBracketEnd {
+      @apply text-sky-500;
+    }
+    &--FunctionName {
+      @apply text-purple-500;
+    }
+    &--BracketStart, &--BracketEnd, &--Operator, &--Comma {
+      @apply text-slate-600;
+    }
+    &--Error, &--error {
+      @apply text-pink-600;
+    }
+  }
+  &__validation {
+    @apply text-sm text-pink-600 min-h-[20px] mt-1;
+  }
 }

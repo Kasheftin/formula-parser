@@ -35,8 +35,11 @@ We use a couple of tricky regular expression like `/^([^"\\]|\\.)+(?=")/`. This 
 - it runs when inside a double quote (after the first `"`)
 - it includes every character except the next `"` not including it ,`(?=")` does the trick
 - but if it finds `\"` (escaped double quote) then it skips it until the next `"` 
-- as the result, a string like `{a} & "Hello,\"John\""` correctly parses `Hello,"John"` as a string
+- as the result, a string like `{a} & "Hello,\"John\""` correctly parses `Hello,"John"` as a string:
 
+![Formula Tokenized](images/pic3.png)
+
+The live coloring demo is deployed on https://jsfiddle.net/kasheftin/8wLd4gbm/2/.
 
 Here's [Lexer](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/lexer.ts) and [Tokenizer](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/tokenizer.ts) source code covered with [tests](https://github.com/Kasheftin/formula-parser/blob/master/shared/src/lexer.spec.ts).
 
@@ -302,7 +305,7 @@ The coloring process itself is trivial because we already have the tokenized inp
 
 ## Usage Demos, Links and Source Code
 
-Two demos was prepared as a usage examples for the formula parser. Both are trivial (just 2 files for each), both have identical logic, one is written in Vue.js, another one uses React.
+Two demos were prepared as a usage examples for the formula parser. Both are trivial (just 2 files for each), both have identical logic, one is written in Vue.js, another one uses React.
 
 - https://github.com/Kasheftin/formula-parser - Source code
 - https://kasheftin.github.io/formula-parser/vue/index.html - Vue3 Demo

@@ -11,15 +11,14 @@ function processTokenStream (formula: string) {
   const skip = (amount = 1) => {
     position += amount
   }
-  const match = (pattern: RegExp, move: boolean) => {
+  const match = (pattern: RegExp, move?: boolean, take = 0) => {
     const match = formula.substring(position).match(pattern)
-    if (!match) {
-      return null
+    if (match) {
+      if (move) {
+        position += (match[take] || '').length
+      }
+      return match[take]
     }
-    if (move) {
-      position += match[0].length
-    }
-    return match[0] || null
   }
 
   let prev: TokenType | null = null

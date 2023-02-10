@@ -165,6 +165,21 @@ tests.push(["uppercase('')", [
   { type: TokenType.BracketEnd, value: ')' }
 ]])
 
+tests.push(['{a} & uppercase("Hello, \\"John\\"")', [
+  { type: TokenType.ReferenceBracketStart, value: '{' },
+  { type: TokenType.ReferenceName, value: 'a' },
+  { type: TokenType.ReferenceBracketEnd, value: '}' },
+  { type: TokenType.Whitespace, value: ' ' },
+  { type: TokenType.Operator, value: '&' },
+  { type: TokenType.Whitespace, value: ' ' },
+  { type: TokenType.FunctionName, value: 'uppercase' },
+  { type: TokenType.BracketStart, value: '(' },
+  { type: TokenType.DoubleQuoteStart, value: '"' },
+  { type: TokenType.String, value: 'Hello, \\"John\\"' },
+  { type: TokenType.DoubleQuoteEnd, value: '"' },
+  { type: TokenType.BracketEnd, value: ')' }
+]])
+
 describe('Lexer(formula, Tokenizer)', () => {
   test.each(tests)('should split %s to tokens correctly and join tokens back to initial formula', (formula, tokens) => {
     const result = getTokens(formula)

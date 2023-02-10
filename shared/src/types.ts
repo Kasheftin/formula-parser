@@ -38,7 +38,7 @@ export type TokenNode = Token & {
 }
 
 export interface LexerStream {
-  match: (pattern: RegExp, consume: boolean) => string | null
+  match: (pattern: RegExp, consume: boolean) => string | undefined
   skip: () => void
   prev: TokenType | null
 }

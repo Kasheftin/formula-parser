@@ -13,6 +13,7 @@ We are going to implement formula parser which supports mathematical operators, 
 - Ifs and comparisons should be supported by the excel syntax, `if({a}<{b},then,else})`.
 
 ### Links & Demo
+- https://teamhood.com/engineering/formula-parser-in-javascript-vue-react/ - Publication
 - https://github.com/Kasheftin/formula-parser - Source code
 - https://kasheftin.github.io/formula-parser/vue/index.html - Vue3 Demo
 - https://kasheftin.github.io/formula-parser/react/index.html - React Demo
@@ -305,8 +306,9 @@ The coloring process itself is trivial because we already have the tokenized inp
 
 ## Usage Demos, Links and Source Code
 
-Two demos were prepared as a usage examples for the formula parser. Both are trivial (just 2 files for each), both have identical logic, one is written in Vue.js, another one uses React.
+Two demos were prepared as a usage examples for the formula parser. Both are trivial (just 2 files for each), both have identical logic, one is written in Vue.js, another one uses React. This publication was published on [TeamHood.com](https://teamhood.com/engineering/formula-parser-in-javascript-vue-react/).
 
+- https://teamhood.com/engineering/formula-parser-in-javascript-vue-react/ - Publication
 - https://github.com/Kasheftin/formula-parser - Source code
 - https://kasheftin.github.io/formula-parser/vue/index.html - Vue3 Demo
 - https://kasheftin.github.io/formula-parser/react/index.html - React Demo
